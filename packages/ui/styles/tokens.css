@@ -1,0 +1,161 @@
+﻿/*
+ * MeridianHer design tokens: "Dusk at the Meridian" (PRD section 12).
+ * This is the ONLY file allowed to contain raw colour values. App code uses
+ * the semantic utilities (bg-background, text-muted-foreground, bg-expert...).
+ * Contrast for every pair is checked by `pnpm check:tokens`.
+ *
+ * Deviations from the PRD table, approved in packages/ui/AUDIT.md (D3):
+ *   --warning (light)  #B7791F -> #8A5A12  (3.43:1 -> 5.57:1 on background)
+ *   --input   (light)  #E2DAD2 -> #8F857C  (1.30:1 -> 3.41:1, WCAG 1.4.11)
+ *   --input   (dark)   #3A3346 -> #756C86  (1.52:1 -> 3.71:1)
+ *   --space-*-ink      new: accent shades safe for icons and text (4.5:1+)
+ */
+
+:root {
+  --background: #faf8f4;
+  --foreground: #1a1a2e;
+  --card: #ffffff;
+  --card-foreground: #1a1a2e;
+  --popover: #ffffff;
+  --popover-foreground: #1a1a2e;
+  --primary: #5b2e52;
+  --primary-foreground: #ffffff;
+  --secondary: #f1e8ef;
+  --secondary-foreground: #5b2e52;
+  --muted: #f3eee8;
+  --muted-foreground: #6b6475;
+  --accent: #f7eae3;
+  --accent-foreground: #a3553a;
+  --brand-terracotta: #c4704f;
+  --expert: #2f6b4f;
+  --expert-foreground: #ffffff;
+  --expert-soft: #e6f0ea;
+  --destructive: #b3261e;
+  --destructive-foreground: #ffffff;
+  --warning: #8a5a12;
+  --warning-foreground: #ffffff;
+  --success: #2f6b4f;
+  --success-foreground: #ffffff;
+  --border: #e8e1da;
+  --input: #8f857c;
+  --ring: #5b2e52;
+  --shadow-soft: 0 1px 2px rgba(26, 26, 46, 0.04), 0 4px 16px rgba(26, 26, 46, 0.06);
+
+  /* Charts: plum first, then terracotta, expert green, gold, dusk blue */
+  --chart-1: #5b2e52;
+  --chart-2: #c4704f;
+  --chart-3: #2f6b4f;
+  --chart-4: #e0a33e;
+  --chart-5: #5e7a99;
+
+  /* Admin sidebar */
+  --sidebar: #f5f1ec;
+  --sidebar-foreground: #1a1a2e;
+  --sidebar-primary: #5b2e52;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f1e8ef;
+  --sidebar-accent-foreground: #5b2e52;
+  --sidebar-border: #e8e1da;
+  --sidebar-ring: #5b2e52;
+
+  /* Space accents: dots and large fills. Chips use a 15% tint with foreground text. */
+  --space-periods: #b23a4b;
+  --space-fertility: #d08c60;
+  --space-pregnancy: #e0a33e;
+  --space-postpartum: #4f8a8b;
+  --space-menopause: #96617f;
+  --space-conditions: #5e7a99;
+  --space-sexual: #c25b7a;
+  --space-mind: #6c7bb0;
+  --space-nutrition: #7c9a65;
+  --space-body: #a67c52;
+
+  /* Space ink: icons and text in the accent colour */
+  --space-periods-ink: #b23a4b;
+  --space-fertility-ink: #92654f;
+  --space-pregnancy-ink: #8d6937;
+  --space-postpartum-ink: #47787c;
+  --space-menopause-ink: #94607d;
+  --space-conditions-ink: #597290;
+  --space-sexual-ink: #ae5371;
+  --space-mind-ink: #626fa0;
+  --space-nutrition-ink: #617656;
+  --space-body-ink: #8d6a4c;
+
+  --radius: 0.75rem;
+
+  /* Type ramp (community). Admin switches to the compact ramp below. */
+  --type-display: 2.25rem;
+  --type-h1: 1.875rem;
+  --type-h2: 1.5rem;
+  --type-h3: 1.25rem;
+  --type-body: 1rem;
+  --type-small: 0.875rem;
+}
+
+.dark {
+  --background: #16131d;
+  --foreground: #f3eee8;
+  --card: #211c2b;
+  --card-foreground: #f3eee8;
+  --popover: #2a2436;
+  --popover-foreground: #f3eee8;
+  --primary: #d7b4cf;
+  --primary-foreground: #16131d;
+  --secondary: #3a2f44;
+  --secondary-foreground: #f3eee8;
+  --muted: #241f2e;
+  --muted-foreground: #a9a1b3;
+  --accent: #3b2a25;
+  --accent-foreground: #e8a88c;
+  --brand-terracotta: #d98a6a;
+  --expert: #7fbf9c;
+  --expert-foreground: #16131d;
+  --expert-soft: #1f3329;
+  --destructive: #f2938c;
+  --destructive-foreground: #16131d;
+  --warning: #e8b464;
+  --warning-foreground: #16131d;
+  --success: #7fbf9c;
+  --success-foreground: #16131d;
+  --border: #352e40;
+  --input: #756c86;
+  --ring: #d7b4cf;
+  --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.4);
+
+  --chart-1: #d7b4cf;
+  --chart-2: #d98a6a;
+  --chart-3: #7fbf9c;
+  --chart-4: #e8b464;
+  --chart-5: #8fa6c2;
+
+  --sidebar: #1b1724;
+  --sidebar-foreground: #f3eee8;
+  --sidebar-primary: #d7b4cf;
+  --sidebar-primary-foreground: #16131d;
+  --sidebar-accent: #3a2f44;
+  --sidebar-accent-foreground: #f3eee8;
+  --sidebar-border: #352e40;
+  --sidebar-ring: #d7b4cf;
+
+  --space-periods-ink: #c66d7a;
+  --space-fertility-ink: #d08c60;
+  --space-pregnancy-ink: #e0a33e;
+  --space-postpartum-ink: #5a9192;
+  --space-menopause-ink: #a77a93;
+  --space-conditions-ink: #718aa5;
+  --space-sexual-ink: #c86b87;
+  --space-mind-ink: #7886b6;
+  --space-nutrition-ink: #7c9a65;
+  --space-body-ink: #a87f55;
+}
+
+/* Admin: same tokens, denser type ramp (PRD section 12, quality rules) */
+[data-density="compact"] {
+  --type-display: 1.75rem;
+  --type-h1: 1.5rem;
+  --type-h2: 1.25rem;
+  --type-h3: 1.0625rem;
+  --type-body: 0.875rem;
+  --type-small: 0.8125rem;
+}

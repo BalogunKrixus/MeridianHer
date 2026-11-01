@@ -1,0 +1,15 @@
+{
+  "name": "meridianher",
+  "private": true,
+  "packageManager": "pnpm@12.16.1",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "check:tokens": "pnpm --filter @meridianher/ui check:tokens"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.0",
+    "typescript": "^5"
+  }
+}
