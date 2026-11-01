@@ -6,7 +6,9 @@
     "dev": "turbo run dev",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
-    "check:tokens": "pnpm --filter @meridianher/ui check:tokens"
+    "check:tokens": "pnpm --filter @meridianher/ui check:tokens",
+    "test": "turbo run test",
+    "db:types": "pnpm --filter @meridianher/db db:types"
   },
   "devDependencies": {
     "turbo": "^2.5.0",

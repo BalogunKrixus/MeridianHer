@@ -1,0 +1,21 @@
+{
+  "name": "@meridianher/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./types": "./src/database.types.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "db:types": "node scripts/gen-types.ts"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.14",
+    "vitest": "^5.0.5",
+    "@meridianher/config": "workspace:*",
+    "@types/node": "^20",
+    "typescript": "^5"
+  }
+}
