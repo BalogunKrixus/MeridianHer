@@ -48,15 +48,6 @@
   --chart-4: #e0a33e;
   --chart-5: #5e7a99;
 
-  /* Admin sidebar */
-  --sidebar: #f5f1ec;
-  --sidebar-foreground: #1a1a2e;
-  --sidebar-primary: #5b2e52;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f1e8ef;
-  --sidebar-accent-foreground: #5b2e52;
-  --sidebar-border: #e8e1da;
-  --sidebar-ring: #5b2e52;
 
   /* Space accents: dots and large fills. Chips use a 15% tint with foreground text. */
   --space-periods: #b23a4b;
@@ -129,14 +120,6 @@
   --chart-4: #e8b464;
   --chart-5: #8fa6c2;
 
-  --sidebar: #1b1724;
-  --sidebar-foreground: #f3eee8;
-  --sidebar-primary: #d7b4cf;
-  --sidebar-primary-foreground: #16131d;
-  --sidebar-accent: #3a2f44;
-  --sidebar-accent-foreground: #f3eee8;
-  --sidebar-border: #352e40;
-  --sidebar-ring: #d7b4cf;
 
   --space-periods-ink: #c66d7a;
   --space-fertility-ink: #d08c60;

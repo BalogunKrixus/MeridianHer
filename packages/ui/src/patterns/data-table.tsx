@@ -20,6 +20,7 @@ import { cn } from "cn"
 import { ArrowDownIcon, ArrowUpDownIcon, ArrowUpIcon, ChevronLeftIcon, ChevronRightIcon, InboxIcon } from "lucide-react"
 
 import { Button } from "../components/button"
+import { Card } from "../components/card"
 import { Checkbox } from "../components/checkbox"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/table"
 
@@ -117,7 +118,7 @@ function DataTable<TData extends RowData>({
   return (
     <div className={cn("flex flex-col gap-3", className)}>
       {toolbar ? toolbar(selectedIds) : null}
-      <div className="overflow-hidden rounded-xl bg-card shadow-soft">
+      <Card className="py-0">
         <Table>
           <TableHeader className="bg-muted/60">
             {table.getHeaderGroups().map((group) => (
@@ -133,20 +134,16 @@ function DataTable<TData extends RowData>({
                       className={cn("h-9 text-xs text-muted-foreground", header.column.id === "select" && "w-10")}
                     >
                       {header.isPlaceholder ? null : canSort ? (
-                        <button
-                          type="button"
-                          onClick={header.column.getToggleSortingHandler()}
-                          className="relative tap-target -ml-1 inline-flex items-center gap-1 rounded px-1 py-0.5 hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring focus-visible:outline-none"
-                        >
+                        <Button variant="ghost" size="xs" className="-ml-2 text-muted-foreground" onClick={header.column.getToggleSortingHandler()}>
                           <FlexRender header={header} />
                           {sorted === "asc" ? (
-                            <ArrowUpIcon className="size-3.5" aria-hidden />
+                            <ArrowUpIcon data-icon="inline-end" aria-hidden />
                           ) : sorted === "desc" ? (
-                            <ArrowDownIcon className="size-3.5" aria-hidden />
+                            <ArrowDownIcon data-icon="inline-end" aria-hidden />
                           ) : (
-                            <ArrowUpDownIcon className="size-3.5 opacity-50" aria-hidden />
+                            <ArrowUpDownIcon data-icon="inline-end" className="opacity-50" aria-hidden />
                           )}
-                        </button>
+                        </Button>
                       ) : (
                         <FlexRender header={header} />
                       )}
@@ -177,7 +174,7 @@ function DataTable<TData extends RowData>({
             )}
           </TableBody>
         </Table>
-      </div>
+      </Card>
       <div className="flex items-center justify-between gap-3 text-small text-muted-foreground">
         <span>{selectable && selectedIds.length ? `${selectedIds.length} selected` : `${data.length} rows`}</span>
         <div className="flex items-center gap-2">

@@ -11,6 +11,10 @@ const toggleVariants = cva(
       variant: {
         default: "bg-transparent",
         outline: "border border-input bg-transparent hover:bg-muted",
+        /** Filter and tag chips: pill on a card surface, plum when pressed */
+        chip: "rounded-full bg-card px-3 shadow-soft hover:bg-secondary aria-pressed:bg-primary aria-pressed:text-primary-foreground data-pressed:bg-primary data-pressed:text-primary-foreground touch:px-4",
+        /** Reactions: quiet until pressed */
+        reaction: "rounded-full px-3 text-muted-foreground touch:px-4",
       },
       size: {
         default:

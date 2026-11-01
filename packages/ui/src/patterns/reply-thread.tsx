@@ -6,6 +6,8 @@ import { FlagIcon, HeartHandshakeIcon, MessageCircleReplyIcon } from "lucide-rea
 
 import { Badge } from "../components/badge"
 import { Button } from "../components/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/card"
+import { Separator } from "../components/separator"
 import type { SpaceTone } from "../lib/spaces"
 import { ExpertBadge, TeamBadge, VerifiedTick } from "./badges"
 import { InitialAvatar } from "./chips"
@@ -25,34 +27,40 @@ export type ExpertAnswerData = {
 /** Pinned under the post when an expert has answered (PRD 6.6). Disclaimer is always attached. */
 function ExpertAnswer({ answer, className }: { answer: ExpertAnswerData; className?: string }) {
   const nameEl = answer.expert.href ? (
-    <a href={answer.expert.href} className="relative tap-target font-medium text-foreground underline-offset-4 hover:underline">
+    <a href={answer.expert.href} className="relative tap-target underline-offset-4 hover:underline">
       {answer.expert.name}
     </a>
   ) : (
-    <span className="font-medium text-foreground">{answer.expert.name}</span>
+    answer.expert.name
   )
   return (
-    <section
-      aria-label={`Expert answer from ${answer.expert.name}`}
-      className={cn("rounded-xl bg-expert-soft p-4 sm:p-5", className)}
+    <Card
+      render={<section aria-label={`Expert answer from ${answer.expert.name}`} />}
+      variant="flat"
+      className={cn("bg-expert-soft", className)}
     >
-      <ExpertBadge category={answer.expert.specialty} />
-      <div className="mt-3 flex items-center gap-2.5">
-        <InitialAvatar name={answer.expert.name} />
-        <div className="min-w-0 text-sm">
-          <p className="flex items-center gap-1">
-            {nameEl}
-            <VerifiedTick />
-          </p>
-          <p className="text-muted-foreground">
-            {answer.expert.title} · {answer.timeAgo}
-          </p>
+      <CardHeader className="gap-3">
+        <ExpertBadge category={answer.expert.specialty} />
+        <div className="flex items-center gap-2.5">
+          <InitialAvatar name={answer.expert.name} />
+          <div className="min-w-0">
+            <CardTitle className="flex items-center gap-1 text-sm">
+              {nameEl}
+              <VerifiedTick />
+            </CardTitle>
+            <CardDescription>
+              {answer.expert.title} · {answer.timeAgo}
+            </CardDescription>
+          </div>
         </div>
-      </div>
-      <div className="mt-3 space-y-3 text-body text-foreground">{answer.body}</div>
-      <p className="mt-4 border-t border-expert/20 pt-3 text-small text-muted-foreground">{EXPERT_DISCLAIMER}</p>
-      <ReactionBar className="mt-3" counts={answer.reactions} size="sm" />
-    </section>
+      </CardHeader>
+      <CardContent className="space-y-3 text-body">{answer.body}</CardContent>
+      <CardContent className="space-y-3">
+        <Separator className="bg-expert/20" />
+        <p className="text-small text-muted-foreground">{EXPERT_DISCLAIMER}</p>
+        <ReactionBar counts={answer.reactions} size="sm" />
+      </CardContent>
+    </Card>
   )
 }
 

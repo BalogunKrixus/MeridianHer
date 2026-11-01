@@ -1,11 +1,12 @@
+import { Button } from "@meridianher/ui/components/button"
+
 export default function Home() {
   return (
-    <main className="mx-auto flex min-h-svh max-w-xl flex-col justify-center gap-4 px-4">
+    <main className="mx-auto flex min-h-svh max-w-xl flex-col items-start justify-center gap-4 px-4">
       <h1 className="text-display">MeridianHer</h1>
-      <p className="text-body text-muted-foreground">Screens are built after the design system is approved.</p>
-      <a href="/design" className="text-primary underline underline-offset-4">
+      <Button variant="link" className="px-0" render={<a href="/design" />} nativeButton={false}>
         Review the design system
-      </a>
+      </Button>
     </main>
   )
 }

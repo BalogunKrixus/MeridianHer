@@ -1,6 +1,8 @@
 import * as React from "react"
 import { cn } from "cn"
 
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/card"
+
 export function Section({
   id,
   title,
@@ -13,16 +15,19 @@ export function Section({
   children: React.ReactNode
 }) {
   return (
-    <section id={id} aria-labelledby={`${id}-title`} className="scroll-mt-28 border-t border-border pt-10">
-      <h2 id={`${id}-title`} className="text-h1 text-foreground">
-        {title}
-      </h2>
-      {description ? <p className="mt-2 max-w-2xl text-body text-muted-foreground">{description}</p> : null}
-      <div className="mt-8 flex flex-col gap-10">{children}</div>
+    <section id={id} aria-labelledby={`${id}-title`} className="flex scroll-mt-28 flex-col gap-10">
+      <header>
+        <h2 id={`${id}-title`} className="text-h1">
+          {title}
+        </h2>
+        {description ? <p className="mt-2 max-w-2xl text-body text-muted-foreground">{description}</p> : null}
+      </header>
+      {children}
     </section>
   )
 }
 
+/** One gallery entry. `bare` shows the pattern on the page background, for patterns that are cards themselves. */
 export function Specimen({
   title,
   note,
@@ -34,24 +39,30 @@ export function Specimen({
   note?: string
   children: React.ReactNode
   className?: string
-  /** Render without the card surface */
   bare?: boolean
 }) {
+  if (bare) {
+    return (
+      <section aria-label={title} className="flex flex-col gap-3">
+        <header>
+          <h3 className="text-h3">{title}</h3>
+          {note ? <p className="text-small text-muted-foreground">{note}</p> : null}
+        </header>
+        <div className={className}>{children}</div>
+      </section>
+    )
+  }
   return (
-    <div className="flex flex-col gap-3">
-      <div>
-        <h3 className="text-h3 text-foreground">{title}</h3>
-        {note ? <p className="mt-0.5 text-small text-muted-foreground">{note}</p> : null}
-      </div>
-      <div className={cn(!bare && "rounded-xl bg-card p-5 shadow-soft", className)}>{children}</div>
-    </div>
+    <Card render={<section aria-label={title} />}>
+      <CardHeader>
+        <CardTitle className="text-h3">{title}</CardTitle>
+        {note ? <CardDescription>{note}</CardDescription> : null}
+      </CardHeader>
+      <CardContent className={className}>{children}</CardContent>
+    </Card>
   )
 }
 
 export function Row({ children, className }: { children: React.ReactNode; className?: string }) {
   return <div className={cn("flex flex-wrap items-center gap-3", className)}>{children}</div>
-}
-
-export function Label({ children }: { children: React.ReactNode }) {
-  return <p className="mb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">{children}</p>
 }

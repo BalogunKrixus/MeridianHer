@@ -2,8 +2,9 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { SparklesIcon } from "lucide-react"
+import { SearchIcon, SparklesIcon } from "lucide-react"
 
+import { Alert, AlertDescription, AlertTitle } from "../components/alert"
 import { Button } from "../components/button"
 import {
   Field,
@@ -21,7 +22,6 @@ import { Spinner } from "../components/spinner"
 import { Switch } from "../components/switch"
 import { ToggleGroup, ToggleGroupItem } from "../components/toggle-group"
 import type { SpaceTone } from "../lib/spaces"
-import { TagChip } from "./chips"
 import { CONTENT_WARNING_LABELS, type ContentWarningType } from "./content-warning-blur"
 import { RichTextEditor, type JSONContent } from "./rich-text-editor"
 
@@ -170,19 +170,18 @@ function Composer({
             aria-invalid={touched && !!errors.title}
             aria-describedby="composer-title-count"
           />
-          <div className="flex justify-between gap-4">
-            {touched && errors.title ? <FieldError>{errors.title}</FieldError> : <span />}
-            <span id="composer-title-count" className="text-xs text-muted-foreground tabular-nums">
-              {titleLen} / {TITLE_MAX}
-            </span>
-          </div>
+          <FieldDescription id="composer-title-count" className="text-right text-xs tabular-nums">
+            {titleLen} / {TITLE_MAX}
+          </FieldDescription>
+          {touched && errors.title ? <FieldError>{errors.title}</FieldError> : null}
         </Field>
 
         {similar && titleLen >= TITLE_MIN ? (
-          <div className="rounded-lg bg-muted p-3">
-            <p className="text-sm font-medium text-foreground">Others asked this</p>
-            <div className="mt-2 text-sm">{similar}</div>
-          </div>
+          <Alert role="status">
+            <SearchIcon aria-hidden />
+            <AlertTitle>Others asked this</AlertTitle>
+            <AlertDescription>{similar}</AlertDescription>
+          </Alert>
         ) : null}
 
         <Field data-invalid={touched && !!errors.body}>
@@ -201,25 +200,24 @@ function Composer({
           <FieldSet>
             <FieldLegend variant="label">Tags</FieldLegend>
             <FieldDescription>Choose up to 3.</FieldDescription>
-            <div className="flex flex-wrap gap-2">
-              {current.tags.map((t) => {
-                const on = tags.includes(t)
-                return (
-                  <TagChip
-                    key={t}
-                    label={t}
-                    pressed={on}
-                    onPressedChange={(p) =>
-                      setTags((prev) => (p ? (prev.length < 3 ? [...prev, t] : prev) : prev.filter((x) => x !== t)))
-                    }
-                  />
-                )
-              })}
-            </div>
+            <ToggleGroup
+              multiple
+              aria-label="Tags"
+              variant="chip"
+              className="flex-wrap"
+              value={tags}
+              onValueChange={(v) => v.length <= 3 && setTags(v as string[])}
+            >
+              {current.tags.map((t) => (
+                <ToggleGroupItem key={t} value={t}>
+                  {t}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
           </FieldSet>
         ) : null}
 
-        <FieldSet className="gap-4 rounded-xl bg-muted/60 p-4">
+        <FieldSet>
           <Field orientation="horizontal">
             <FieldContent>
               <FieldLabel htmlFor="composer-warning">Add a content warning</FieldLabel>

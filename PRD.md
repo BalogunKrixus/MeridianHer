@@ -52,7 +52,7 @@ Every screen, feature and decision is checked against these. When two conflict, 
 3. **Expert answers are earned and visible.** A badge means we checked credentials. We never fake expertise and never let a badge be bought.
 4. **Say the real word.** Vagina, vulva, discharge, miscarriage, libido. The product copy is frank, warm and never clinical or coy. No euphemisms for body parts.
 5. **Read freely, act with an account.** Visitors can read everything public so the content does good even for women who never sign up. Posting needs an account so we can moderate.
-6. **Calm, editorial, grown up.** The interface feels like a well designed magazine, not a social feed. Generous space, serif headlines, soft surfaces, no visual noise.
+6. **Calm, editorial, grown up.** The interface feels like a well designed magazine, not a social feed. Generous space, confident Geist headlines, soft surfaces, no visual noise.
 7. **Every chapter of her life.** Content and spaces cover menarche to menopause. Nothing assumes she is trying to conceive, or that she is not.
 8. **Global first, Nigeria aware.** Works on low bandwidth Android phones in Lagos as well as on a laptop in London. Copy avoids region specific assumptions about healthcare systems.
 
@@ -218,7 +218,7 @@ Each space has: name, slug, icon, accent colour, description, rules (up to 5 ext
 
 ### 6.4 Post card
 
-Avatar initial circle in the space accent colour, display name, time ago, space chip, tag chip, optional content warning blur, title (bold serif), first three lines of body, badges row (EXPERT ANSWERED in green pill, TEAM badge), footer with reaction count, reply count, save, share and overflow menu (report, hide, copy link).
+Avatar initial circle in the space accent colour, display name, time ago, space chip, tag chip, optional content warning blur, title (bold), first three lines of body, badges row (EXPERT ANSWERED in green pill, TEAM badge), footer with reaction count, reply count, save, share and overflow menu (report, hide, copy link).
 
 ### 6.5 Creating a post (P0)
 
@@ -513,8 +513,9 @@ Both apps are built only from `packages/ui`, which Claude Code creates by readin
 ### Step 2: build the package
 
 - **Tokens** as CSS variables in `packages/ui/styles/tokens.css`, exposed through a shared Tailwind preset. Semantic names only in app code (`bg-surface`, `text-muted-foreground`, `border-subtle`), never raw hex.
-- **Brand layer** on top of the local system: warm cream background (around #FAF8F4), deep ink text, Meridian Plum as primary (full token set below), phase accents for spaces (#B23A4B, #7C9A65, #E0A33E, #96617F) plus extra accents for non cycle spaces, green for expert badges. Soft shadows instead of hard borders. Serif display font for headings (for example Fraunces or Playfair Display), clean sans for body (Inter or the local system's font).
-- **Primitives**: re export the local shadcn components (Button, Input, Textarea, Select, Dialog, Sheet, DropdownMenu, Tabs, Tooltip, Toast, Avatar, Badge, Card, Skeleton, Command, Table, Form) with brand variants.
+- **Brand layer** on top of the local system: warm cream background (around #FAF8F4), deep ink text, Meridian Plum as primary (full token set below), phase accents for spaces (#B23A4B, #7C9A65, #E0A33E, #96617F) plus extra accents for non cycle spaces, green for expert badges. Soft shadows instead of hard borders. **Geist** is the only typeface: Geist for headings and body (headings set in semibold with tighter tracking), Geist Mono for IDs and technical values in admin. Loaded with `next/font` with the Latin, Latin Extended and Vietnamese subsets so Yoruba, Igbo and Hausa characters render.
+- **Primitives**: the local shadcn components with brand variants. A primitive lives in the package only while a pattern or screen uses it: it is added from the local system or the shadcn registry when first needed (for example Tabs, Skeleton, Toast, Command, AlertDialog) and removed when nothing imports it.
+- **Composition rule**: apps are built only from package components. No raw button, input, card or similar element where a component exists, no wrapper divs without a purpose, and no one off styling outside the package.
 - **Patterns** built once and shared: PostCard, ReplyThread, ExpertBadge, TeamBadge, SpaceChip, TagChip, ReactionBar, ContentWarningBlur, Composer, EmptyState, SignInSheet, GuidelinesCard, CrisisCard, and for admin DataTable (TanStack Table), StatCard, QueueItem, FilterBar, AuditRow.
 - **Storybook** or a `/design` route in each app showing every component and state, used for review before screens.
 

@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 
-import { fraunces, geistMono, inter } from "./fonts"
+import { geistMono, geistSans } from "./fonts"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en-GB" data-density="compact" className={`${inter.variable} ${fraunces.variable} ${geistMono.variable}`}>
+    <html lang="en-GB" data-density="compact" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body>{children}</body>
     </html>
   )

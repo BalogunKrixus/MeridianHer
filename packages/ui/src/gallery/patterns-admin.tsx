@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import { DownloadIcon, EyeOffIcon } from "lucide-react"
-import { toast } from "sonner"
 
 import { Badge } from "../components/badge"
 import { Button } from "../components/button"
@@ -46,24 +45,7 @@ export function AdminPatterns() {
   const [filters, setFilters] = React.useState<Record<string, string | null>>({ range: "7", space: null })
   const [search, setSearch] = React.useState("")
   const [selected, setSelected] = React.useState<Record<string, boolean>>({})
-  const [focused, setFocused] = React.useState(0)
-
   const members = sampleMembers.filter((m) => m.displayName.toLowerCase().includes(search.toLowerCase()))
-
-  React.useEffect(() => {
-    const keys: Record<string, string> = { a: "Approved", h: "Hidden", w: "Warning sent", m: "Muted", b: "Ban dialog opens", e: "Escalated to admin" }
-    function onKey(e: KeyboardEvent) {
-      const t = e.target as HTMLElement
-      if (t.closest("input, textarea, [contenteditable], [role=dialog], [role=menu], [role=listbox]") || e.metaKey || e.ctrlKey || e.altKey) return
-      if (!document.getElementById("admin")?.matches(":hover, :focus-within")) return
-      const k = e.key.toLowerCase()
-      if (k === "j") setFocused((f) => Math.min(sampleQueue.length - 1, f + 1))
-      else if (k === "k") setFocused((f) => Math.max(0, f - 1))
-      else if (keys[k]) toast(`${keys[k]}: ${sampleQueue[focused].author.displayName}`)
-    }
-    window.addEventListener("keydown", onKey)
-    return () => window.removeEventListener("keydown", onKey)
-  }, [focused])
 
   return (
     <Section
@@ -107,7 +89,7 @@ export function AdminPatterns() {
               onValuesChange={() => {}}
               actions={
                 ids.length ? (
-                  <Button variant="outline" size="sm" onClick={() => toast(`${ids.length} members muted for 24 hours`)}>
+                  <Button variant="outline" size="sm">
                     <EyeOffIcon data-icon="inline-start" /> Mute {ids.length}
                   </Button>
                 ) : (
@@ -119,28 +101,22 @@ export function AdminPatterns() {
         />
       </Specimen>
 
-      <Specimen title="Moderation queue item" note="Press J and K to move between items, then A, H, W, M, B or E while the pointer is over this section." bare>
-        <div className="flex flex-col gap-4">
-          {sampleQueue.map((item, i) => (
-            <QueueItem
-              key={item.id}
-              item={item}
-              focused={i === focused}
-              selected={!!selected[item.id]}
-              onSelectedChange={(v) => setSelected((s) => ({ ...s, [item.id]: v }))}
-              onAction={(a) => toast(`${a} on ${item.author.displayName}`)}
-              onClaim={() => toast("Claimed by you")}
-            />
-          ))}
-        </div>
+      <Specimen title="Moderation queue item" note="The focused item (first) takes the A, H, W, M, B and E shortcuts on the queue screen." bare className="flex flex-col gap-4">
+        {sampleQueue.map((item, i) => (
+          <QueueItem
+            key={item.id}
+            item={item}
+            focused={i === 0}
+            selected={!!selected[item.id]}
+            onSelectedChange={(v) => setSelected((s) => ({ ...s, [item.id]: v }))}
+          />
+        ))}
       </Specimen>
 
-      <Specimen title="Audit log rows" note="Append only. Expand a row to see before and after." bare>
-        <div className="rounded-xl bg-card shadow-soft">
-          {sampleAudit.map((e) => (
-            <AuditRow key={e.id} entry={e} />
-          ))}
-        </div>
+      <Specimen title="Audit log rows" note="Append only. Expand a row to see before and after." className="px-0">
+        {sampleAudit.map((e) => (
+          <AuditRow key={e.id} entry={e} />
+        ))}
       </Specimen>
     </Section>
   )

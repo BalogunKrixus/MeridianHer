@@ -56,8 +56,6 @@ const pairs = [
   ["warning-foreground", "warning", TEXT],
   ["success", "background", TEXT],
   ["success-foreground", "success", TEXT],
-  ["sidebar-foreground", "sidebar", TEXT],
-  ["sidebar-accent-foreground", "sidebar-accent", TEXT],
   ["input", "background", UI],
   ["input", "card", UI],
   ["ring", "background", UI],

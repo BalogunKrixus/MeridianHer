@@ -2,8 +2,9 @@
 
 import { cn } from "cn"
 import { MinusIcon, TrendingDownIcon, TrendingUpIcon } from "lucide-react"
-import { Area, AreaChart } from "recharts"
+import { Area, AreaChart, XAxis, YAxis } from "recharts"
 
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/card"
 import { ChartContainer, type ChartConfig } from "../components/chart"
 
 /**
@@ -34,30 +35,34 @@ function StatCard({
   const good = dir === "flat" ? null : dir === goodWhen
   const Icon = dir === "up" ? TrendingUpIcon : dir === "down" ? TrendingDownIcon : MinusIcon
   const config = { v: { label, color: "var(--chart-1)" } } satisfies ChartConfig
-  const Root = href ? "a" : "div"
 
   return (
-    <Root
-      {...(href ? { href } : {})}
-      className={cn(
-        "flex flex-col gap-1 rounded-xl bg-card p-4 text-card-foreground shadow-soft",
-        href && "transition-colors hover:bg-muted/40 focus-visible:ring-3 focus-visible:ring-ring focus-visible:outline-none",
-        className
-      )}
-    >
-      <span className="text-small text-muted-foreground">{label}</span>
-      <div className="flex items-end justify-between gap-3">
-        <span className="font-heading text-h1 tabular-nums">{value}</span>
+    <Card size="sm" className={cn("relative", href && "hover:bg-muted/40 focus-within:ring-3 focus-within:ring-ring", className)}>
+      <CardHeader>
+        <CardDescription>
+          {href ? (
+            <a href={href} className="after:absolute after:inset-0 focus-visible:outline-none">
+              {label}
+            </a>
+          ) : (
+            label
+          )}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex items-end justify-between gap-3">
+        <CardTitle className="text-h1 tabular-nums">{value}</CardTitle>
         {trend?.length ? (
           <ChartContainer config={config} className="aspect-auto h-10 w-24" aria-hidden>
             <AreaChart data={trend.map((v, i) => ({ i, v }))} margin={{ top: 2, bottom: 2, left: 0, right: 0 }}>
+              <XAxis dataKey="i" hide />
+              <YAxis hide domain={["dataMin", "dataMax"]} />
               <Area dataKey="v" type="monotone" stroke="var(--color-v)" fill="var(--color-v)" fillOpacity={0.12} strokeWidth={1.5} />
             </AreaChart>
           </ChartContainer>
         ) : null}
-      </div>
+      </CardContent>
       {change !== undefined ? (
-        <span
+        <CardContent
           className={cn(
             "flex items-center gap-1 text-xs font-medium",
             good === true && "text-success",
@@ -71,9 +76,9 @@ function StatCard({
             {change}%
           </span>
           <span className="font-normal text-muted-foreground">{period}</span>
-        </span>
+        </CardContent>
       ) : null}
-    </Root>
+    </Card>
   )
 }
 

@@ -1,8 +1,9 @@
 "use client"
 
 import * as React from "react"
-import { LockKeyholeIcon, MailIcon } from "lucide-react"
+import { LockKeyholeIcon, MailCheckIcon, MailIcon } from "lucide-react"
 
+import { Alert, AlertDescription, AlertTitle } from "../components/alert"
 import { Button } from "../components/button"
 import { Field, FieldLabel } from "../components/field"
 import { Input } from "../components/input"
@@ -59,16 +60,16 @@ function SignInSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side={isMobile ? "bottom" : "right"} className="gap-0 rounded-t-2xl p-6 sm:rounded-none sm:max-w-md">
         <SheetHeader className="p-0">
-          <SheetTitle className="font-heading text-h2">Sign in to {action}</SheetTitle>
+          <SheetTitle className="text-h2">Sign in to {action}</SheetTitle>
           <SheetDescription className="text-body">
             Reading is free for everyone. To post, reply or react, you need an account so we can keep this space safe.
           </SheetDescription>
         </SheetHeader>
 
-        <p className="mt-5 flex items-start gap-2 rounded-lg bg-secondary p-3 text-sm text-secondary-foreground">
-          <LockKeyholeIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
-          Your name and email are never shown. You choose how you appear.
-        </p>
+        <Alert role="note" className="mt-5">
+          <LockKeyholeIcon aria-hidden />
+          <AlertDescription>Your name and email are never shown. You choose how you appear.</AlertDescription>
+        </Alert>
 
         <Button size="lg" className="mt-6 w-full" onClick={onGoogle}>
           <GoogleMark />
@@ -82,9 +83,11 @@ function SignInSheet({
         </div>
 
         {state === "sent" ? (
-          <p role="status" className="rounded-lg bg-success/10 p-3 text-sm text-foreground">
-            Check your inbox. We sent a sign in link to <span className="font-medium">{email}</span>. It works for 15 minutes.
-          </p>
+          <Alert role="status" variant="success">
+            <MailCheckIcon aria-hidden />
+            <AlertTitle>Check your inbox</AlertTitle>
+            <AlertDescription>We sent a sign in link to {email}. It works for 15 minutes.</AlertDescription>
+          </Alert>
         ) : (
           <form onSubmit={sendLink} className="flex flex-col gap-3">
             <Field>

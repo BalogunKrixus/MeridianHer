@@ -16,6 +16,7 @@ import {
 
 import { Badge } from "../components/badge"
 import { Button } from "../components/button"
+import { Card } from "../components/card"
 import { Checkbox } from "../components/checkbox"
 import { Kbd } from "../components/kbd"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../components/tooltip"
@@ -80,11 +81,11 @@ function QueueItem({
   const totalReports = item.reports?.reduce((n, r) => n + r.count, 0) ?? 0
 
   return (
-    <article
-      aria-label={`${item.priority === "urgent" ? "Urgent " : ""}${item.targetType} by ${item.author.displayName}`}
+    <Card
+      render={<article aria-label={`${item.priority === "urgent" ? "Urgent " : ""}${item.targetType} by ${item.author.displayName}`} />}
       data-focused={focused || undefined}
       className={cn(
-        "grid grid-cols-[auto_1fr] gap-x-3 gap-y-3 rounded-xl bg-card p-4 shadow-soft data-focused:ring-2 data-focused:ring-ring",
+        "grid grid-cols-[auto_1fr] gap-x-3 px-4 data-focused:ring-2 data-focused:ring-ring",
         item.priority === "urgent" && "border-l-4 border-destructive",
         className
       )}
@@ -123,7 +124,7 @@ function QueueItem({
         {item.context ? (
           <p className="truncate border-l-2 border-border pl-3 text-small text-muted-foreground">In reply to: {item.context}</p>
         ) : null}
-        <p className="rounded-lg bg-muted/60 p-3 text-body text-foreground">{item.content}</p>
+        <blockquote className="rounded-lg bg-muted p-3 text-body">{item.content}</blockquote>
 
         <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-small sm:grid-cols-4">
           <div>
@@ -178,7 +179,7 @@ function QueueItem({
           ))}
         </div>
       </div>
-    </article>
+    </Card>
   )
 }
 

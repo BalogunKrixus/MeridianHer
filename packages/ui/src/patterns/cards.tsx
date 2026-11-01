@@ -3,6 +3,7 @@ import { cn } from "cn"
 import { LifeBuoyIcon, PhoneIcon, ShieldCheckIcon } from "lucide-react"
 
 import { Button } from "../components/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/card"
 import {
   Empty,
   EmptyContent,
@@ -23,26 +24,29 @@ export const COMMUNITY_GUIDELINES = [
 /** Right rail card with the five rules (PRD section 8). */
 function GuidelinesCard({ href = "/guidelines", className }: { href?: string; className?: string }) {
   return (
-    <section aria-labelledby="guidelines-title" className={cn("rounded-xl bg-card p-5 shadow-soft", className)}>
-      <h2 id="guidelines-title" className="flex items-center gap-2 text-h3 text-foreground">
-        <ShieldCheckIcon className="size-5 text-primary" aria-hidden />
-        How we talk here
-      </h2>
-      <ol className="mt-3 space-y-2.5">
-        {COMMUNITY_GUIDELINES.map((rule, i) => (
-          <li key={rule.title} className="flex gap-3 text-sm">
-            <span className="font-heading text-base leading-5 font-semibold text-primary tabular-nums">{i + 1}</span>
-            <span>
-              <span className="font-medium text-foreground">{rule.title}.</span>{" "}
+    <Card render={<section aria-labelledby="guidelines-title" />} className={className}>
+      <CardHeader>
+        <CardTitle id="guidelines-title" className="flex items-center gap-2 text-h3">
+          <ShieldCheckIcon className="size-5 text-primary" aria-hidden />
+          How we talk here
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ol className="list-decimal space-y-2.5 pl-5 marker:font-semibold marker:text-primary">
+          {COMMUNITY_GUIDELINES.map((rule) => (
+            <li key={rule.title}>
+              <span className="font-medium">{rule.title}.</span>{" "}
               <span className="text-muted-foreground">{rule.body}</span>
-            </span>
-          </li>
-        ))}
-      </ol>
-      <a href={href} className="relative tap-target mt-4 inline-block text-sm font-medium text-primary underline-offset-4 hover:underline">
-        Read the full guidelines
-      </a>
-    </section>
+            </li>
+          ))}
+        </ol>
+      </CardContent>
+      <CardContent>
+        <Button variant="link" className="px-0" render={<a href={href} />} nativeButton={false}>
+          Read the full guidelines
+        </Button>
+      </CardContent>
+    </Card>
   )
 }
 
@@ -79,28 +83,27 @@ function CrisisCard({
   className?: string
 }) {
   return (
-    <section
-      aria-labelledby="crisis-title"
-      className={cn("rounded-xl bg-accent p-5 text-foreground", className)}
-    >
-      <h2 id="crisis-title" className="flex items-center gap-2 text-h3">
-        <LifeBuoyIcon className="size-5 text-accent-foreground" aria-hidden />
-        Need help now?
-      </h2>
-      <p className="mt-1.5 text-sm text-muted-foreground">
-        If you are thinking about hurting yourself or feel unsafe, please reach out now. You deserve support.
-      </p>
-      <div className={cn("mt-4 grid gap-4", !compact && "sm:grid-cols-2")}>
+    <Card render={<section aria-labelledby="crisis-title" />} variant="flat" className={cn("bg-accent", className)}>
+      <CardHeader>
+        <CardTitle id="crisis-title" className="flex items-center gap-2 text-h3">
+          <LifeBuoyIcon className="size-5 text-accent-foreground" aria-hidden />
+          Need help now?
+        </CardTitle>
+        <CardDescription>
+          If you are thinking about hurting yourself or feel unsafe, please reach out now. You deserve support.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className={cn("grid gap-4", !compact && "sm:grid-cols-2")}>
         {countries.map((c) => (
-          <div key={c.country}>
+          <section key={c.country} aria-label={c.country}>
             <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{c.country}</h3>
             <ul className="mt-2 space-y-2">
               {c.resources.map((r) => (
                 <li key={r.name} className="flex items-center justify-between gap-3">
-                  <span className="min-w-0 text-sm">
+                  <p className="min-w-0">
                     <span className="block font-medium">{r.name}</span>
                     {r.detail ? <span className="block text-muted-foreground">{r.detail}</span> : null}
-                  </span>
+                  </p>
                   {r.phone ? (
                     <Button
                       variant="outline"
@@ -119,10 +122,10 @@ function CrisisCard({
                 </li>
               ))}
             </ul>
-          </div>
+          </section>
         ))}
-      </div>
-    </section>
+      </CardContent>
+    </Card>
   )
 }
 
@@ -148,7 +151,7 @@ function EmptyState({
             <Icon className="size-5" />
           </EmptyMedia>
         ) : null}
-        <EmptyTitle className="font-heading text-lg">{title}</EmptyTitle>
+        <EmptyTitle className="text-lg">{title}</EmptyTitle>
         {description ? <EmptyDescription>{description}</EmptyDescription> : null}
       </EmptyHeader>
       {action ? <EmptyContent>{action}</EmptyContent> : null}

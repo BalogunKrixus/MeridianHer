@@ -23,6 +23,10 @@ const badgeVariants = cva(
         success: "bg-success/10 text-success",
         warning: "bg-warning/10 text-warning",
         soft: "bg-secondary text-secondary-foreground",
+        /** Space chip: 15% accent tint with foreground text. Set the accent with spaceToneStyle(). */
+        space:
+          "h-6 max-w-full gap-1.5 px-2.5 bg-[color-mix(in_oklab,var(--tone)_15%,transparent)] text-foreground [a]:relative [a]:tap-target [a]:hover:bg-[color-mix(in_oklab,var(--tone)_25%,transparent)] [&>svg]:size-3.5! [&>svg]:text-(--tone-ink)",
+        tag: "h-6 px-2.5 bg-muted text-muted-foreground [a]:relative [a]:tap-target [a]:hover:text-foreground",
       },
     },
     defaultVariants: {
