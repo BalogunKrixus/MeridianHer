@@ -1,6 +1,6 @@
 "use client"
 
-import { cn } from "cn"
+import { cn } from "../lib/utils"
 import { ChevronRightIcon } from "lucide-react"
 
 import { Badge } from "../components/badge"

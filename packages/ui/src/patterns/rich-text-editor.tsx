@@ -3,7 +3,7 @@
 import * as React from "react"
 import { EditorContent, useEditor, useEditorState, type JSONContent } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
-import { cn } from "cn"
+import { cn } from "../lib/utils"
 import { BoldIcon, ItalicIcon, LinkIcon, ListIcon, ListOrderedIcon } from "lucide-react"
 
 import { Toggle } from "../components/toggle"

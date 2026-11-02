@@ -56,7 +56,7 @@ $$;
 create table public.profiles (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null unique references auth.users (id) on delete cascade,
-  display_name text check (display_name ~ '^[[:alpha:]][[:alpha:] ]{1,28}[[:alpha:]]$'),
+  display_name text check (display_name ~ '^[[:alpha:]][[:alpha:]\u0300-\u036f ]{1,38}[[:alpha:]\u0300-\u036f]$'),
   display_name_changed_at timestamptz,
   birth_year smallint check (birth_year between 1900 and 2100),
   role public.app_role not null default 'member',

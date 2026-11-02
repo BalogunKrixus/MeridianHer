@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { cn } from "cn"
+import { cn } from "../lib/utils"
 import { SearchIcon, SparklesIcon } from "lucide-react"
 
 import { Alert, AlertDescription, AlertTitle } from "../components/alert"

@@ -22,7 +22,7 @@ grant execute on function
   app.can_participate(), app.can_act(), app.rich_text_plain(jsonb)
 to anon, authenticated;
 
-grant execute on function public.display_name_available(text) to authenticated;
+grant execute on function public.check_display_name(text) to authenticated;
 grant execute on function public.complete_onboarding(text, integer, text[], boolean) to authenticated;
 grant execute on function public.custom_access_token_hook(jsonb) to supabase_auth_admin;
 grant usage on schema public to supabase_auth_admin;

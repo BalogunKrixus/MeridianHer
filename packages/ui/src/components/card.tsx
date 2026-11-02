@@ -1,7 +1,7 @@
 import * as React from "react"
 import { mergeProps } from "@base-ui/react/merge-props"
 import { useRender } from "@base-ui/react/use-render"
-import { cn } from "cn"
+import { cn } from "../lib/utils"
 
 /** `render` swaps the element, for example `render={<article />}` or `render={<section />}`. */
 function Card({

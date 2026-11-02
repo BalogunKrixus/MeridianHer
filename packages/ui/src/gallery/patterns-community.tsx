@@ -123,7 +123,7 @@ export function CommunityPatterns() {
       <div className="grid items-start gap-10 lg:grid-cols-2">
         <Specimen title="Sign in sheet" note="Opens only when a visitor tries to act. Bottom sheet on phones.">
           <Button onClick={() => setSignInOpen(true)}>Reply</Button>
-          <SignInSheet open={signInOpen} onOpenChange={setSignInOpen} action="reply" />
+          <SignInSheet open={signInOpen} onOpenChange={setSignInOpen} action="reply" onGoogle={() => {}} onEmail={async () => {}} />
         </Specimen>
         <Specimen title="Empty states" bare className="flex flex-col gap-4">
           <EmptyState

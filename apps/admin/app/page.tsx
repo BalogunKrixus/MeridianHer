@@ -1,12 +1,34 @@
+import { Badge } from "@meridianher/ui/components/badge"
 import { Button } from "@meridianher/ui/components/button"
+import { InitialAvatar } from "@meridianher/ui/patterns/chips"
 
-export default function Home() {
+import { signOut } from "./auth/actions"
+import { requireStaff } from "./staff"
+
+export default async function AdminHome() {
+  const staff = await requireStaff()
+  const name = staff.display_name ?? "Team member"
+
   return (
-    <main className="mx-auto flex min-h-svh max-w-xl flex-col items-start justify-center gap-4 px-4">
-      <h1 className="text-display">MeridianHer</h1>
-      <Button variant="link" className="px-0" render={<a href="/design" />} nativeButton={false}>
-        Review the design system
-      </Button>
-    </main>
+    <>
+      <header className="border-b">
+        <nav aria-label="Main" className="flex h-12 items-center gap-3 px-4">
+          <span className="mr-auto font-semibold tracking-tight">MeridianHer admin</span>
+          <InitialAvatar name={name} size="sm" />
+          <span className="text-sm font-medium">{name}</span>
+          <Badge variant="secondary" className="capitalize">
+            {staff.role.replace("_", " ")}
+          </Badge>
+          <form action={signOut}>
+            <Button type="submit" variant="ghost" size="sm">
+              Sign out
+            </Button>
+          </form>
+        </nav>
+      </header>
+      <main className="px-4 py-8">
+        <h1 className="text-h1">Overview</h1>
+      </main>
+    </>
   )
 }

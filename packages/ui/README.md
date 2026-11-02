@@ -36,7 +36,8 @@ Admin sets `data-density="compact"` on `<html>` for the denser type ramp.
 **Composition.** Apps use package components only: no raw button, input, card or similar where a component exists. If
 something is missing, add it here first (`pnpm dlx shadcn add <name>` from `packages/ui`), then use it. A primitive stays in the
 package only while a pattern or screen imports it. Card and Badge take a `render` prop for semantic elements
-(`render={<article />}`, `render={<a href="..." />}`).
+(`render={<article />}`, `render={<a href="..." />}`). Merge classes with `cn` from `src/lib/utils`, which knows the type ramp
+(`text-h2` overrides `text-base`).
 
 **Touch targets.** On phones and touch screens (`pointer: coarse` or narrower than 768px) every control is at least 44px.
 Buttons, inputs, selects, tabs lists, toggles, menu items, sidebar items and calendar days grow visually through the

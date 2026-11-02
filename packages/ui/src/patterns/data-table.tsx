@@ -16,7 +16,7 @@ import {
   type RowSelectionState,
   type SortingState,
 } from "@tanstack/react-table"
-import { cn } from "cn"
+import { cn } from "../lib/utils"
 import { ArrowDownIcon, ArrowUpDownIcon, ArrowUpIcon, ChevronLeftIcon, ChevronRightIcon, InboxIcon } from "lucide-react"
 
 import { Button } from "../components/button"

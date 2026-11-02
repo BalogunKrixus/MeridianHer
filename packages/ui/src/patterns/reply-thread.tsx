@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { cn } from "cn"
+import { cn } from "../lib/utils"
 import { FlagIcon, HeartHandshakeIcon, MessageCircleReplyIcon } from "lucide-react"
 
 import { Badge } from "../components/badge"

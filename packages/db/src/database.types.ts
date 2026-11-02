@@ -1287,6 +1287,12 @@ export type Database = {
       }
     }
     Functions: {
+      check_display_name: {
+        Args: {
+          name: string
+        }
+        Returns: string
+      }
       complete_onboarding: {
         Args: {
           display_name: string
@@ -1301,12 +1307,6 @@ export type Database = {
           event: Json
         }
         Returns: Json
-      }
-      display_name_available: {
-        Args: {
-          name: string
-        }
-        Returns: boolean
       }
     }
     Enums: {

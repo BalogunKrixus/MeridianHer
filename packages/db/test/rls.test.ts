@@ -381,6 +381,16 @@ describe("onboarding", () => {
     await expect(onboard(b, "golden moss", 1990)).rejects.toThrow(/display_name_taken/)
   })
 
+  it("rejects blocked words and names that are not letters and spaces", async () => {
+    const user = await db.createUser({ onboarded: false })
+    await db.pg.query(`update public.settings set value = '["badword"]' where key = 'blocked_words'`)
+    const check = (name: string) => db.as(user, (q) => q.query<{ r: string }>("select public.check_display_name($1) as r", [name]))
+    expect((await check("Badword Fern")).rows[0].r).toBe("blocked")
+    expect((await check("Fern 2000")).rows[0].r).toBe("invalid")
+    expect((await check("Adébáyọ̀ Fern")).rows[0].r).toBe("ok")
+    await db.pg.query(`update public.settings set value = '[]' where key = 'blocked_words'`)
+  })
+
   it("does not follow age gated spaces for 16 and 17 year olds", async () => {
     const user = await db.createUser({ onboarded: false })
     await expect(onboard(user, "Morning Fig", thisYear - 16, ["sexual-health"])).rejects.toThrow(/no_spaces_chosen/)
@@ -388,11 +398,11 @@ describe("onboarding", () => {
 
   it("adds the role to the access token", async () => {
     const mod = await db.createUser({ role: "moderator" })
-    const { rows } = await db.pg.query<{ token: { claims: { user_role: string } } }>(
+    const { rows } = await db.pg.query<{ token: { claims: { user_role: string; onboarded: boolean } } }>(
       "select public.custom_access_token_hook($1) as token",
       [JSON.stringify({ user_id: mod, claims: { sub: mod } })]
     )
-    expect(rows[0].token.claims.user_role).toBe("moderator")
+    expect(rows[0].token.claims).toMatchObject({ user_role: "moderator", onboarded: true })
   })
 })
 

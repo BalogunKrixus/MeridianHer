@@ -176,18 +176,32 @@ $$;
 create trigger audit_profile_access after update on public.profiles
   for each row execute function app.audit_profile_access_change();
 
--- Free when no profile holds it and nobody released it in the last 90 days.
-create function public.display_name_available(name text) returns boolean
-language sql stable security definer set search_path = '' as $$
-  select not exists (
-    select 1 from public.profiles
-    where lower(display_name) = lower(btrim(name)) and user_id <> coalesce(auth.uid(), '00000000-0000-0000-0000-000000000000')
-  ) and not exists (
-    select 1 from public.display_name_history
-    where lower(display_name) = lower(btrim(name))
-      and released_at > now() - interval '90 days'
-      and user_id <> coalesce(auth.uid(), '00000000-0000-0000-0000-000000000000')
-  )
+-- Why a display name cannot be used, or 'ok'. A name is free when nobody holds
+-- it and nobody released it in the last 90 days. Blocked words are admin edited.
+create function public.check_display_name(name text) returns text
+language plpgsql stable security definer set search_path = '' as $$
+declare
+  clean text := lower(regexp_replace(btrim(name), '\s+', ' ', 'g'));
+  me uuid := coalesce(auth.uid(), '00000000-0000-0000-0000-000000000000');
+begin
+  if clean !~ '^[[:alpha:]][[:alpha:]\u0300-\u036f ]{1,38}[[:alpha:]\u0300-\u036f]$' then
+    return 'invalid';
+  end if;
+  if exists (
+    select 1 from jsonb_array_elements_text(coalesce(app.setting('blocked_words'), '[]')) w
+    where clean ~ ('\m' || lower(w) || '\M')
+  ) then
+    return 'blocked';
+  end if;
+  if exists (select 1 from public.profiles where lower(display_name) = clean and user_id <> me)
+    or exists (
+      select 1 from public.display_name_history
+      where lower(display_name) = clean and released_at > now() - interval '90 days' and user_id <> me
+    ) then
+    return 'taken';
+  end if;
+  return 'ok';
+end;
 $$;
 
 -- First time onboarding (PRD section 5). Under 16s are rejected with `under_age`;
@@ -217,9 +231,11 @@ begin
   if not coalesce(accept_guidelines, false) then
     raise exception 'guidelines_not_accepted' using errcode = 'P0001';
   end if;
-  if not public.display_name_available(clean_name) then
-    raise exception 'display_name_taken' using errcode = '23505';
-  end if;
+  case public.check_display_name(clean_name)
+    when 'ok' then null;
+    when 'taken' then raise exception 'display_name_taken' using errcode = '23505';
+    else raise exception 'display_name_invalid' using errcode = '22023';
+  end case;
 
   update public.profiles
   set display_name = clean_name,
@@ -242,15 +258,18 @@ begin
 end;
 $$;
 
--- Adds the member's role to the JWT for RLS and the admin middleware.
+-- Adds the member's role and onboarding state to the JWT, for the apps' proxies.
+-- RLS never trusts these claims; it reads profiles directly.
 -- Enable in Supabase: Authentication, Hooks, Customize access token.
 create function public.custom_access_token_hook(event jsonb) returns jsonb
 language sql stable security definer set search_path = '' as $$
   select jsonb_set(
-    event,
-    '{claims,user_role}',
-    to_jsonb(coalesce((select role::text from public.profiles where user_id = (event ->> 'user_id')::uuid), 'member'))
+    jsonb_set(event, '{claims,user_role}', to_jsonb(coalesce(p.role::text, 'member'))),
+    '{claims,onboarded}',
+    to_jsonb(coalesce(p.onboarding_complete, false))
   )
+  from (select 1) one
+  left join public.profiles p on p.user_id = (event ->> 'user_id')::uuid
 $$;
 
 -- Posting rules ----------------------------------------------------------------
