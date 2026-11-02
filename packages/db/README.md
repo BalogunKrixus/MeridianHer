@@ -29,7 +29,7 @@ Apply the schema to the hosted dev project with the Supabase CLI:
 
 ```powershell
 pnpm dlx supabase link --project-ref <dev project ref>
-pnpm dlx supabase db push --include-seed
+pnpm dlx supabase db push --linked --include-seed
 ```
 
 Then in the Supabase dashboard turn on the access token hook (Authentication, Hooks, Customize access token,
