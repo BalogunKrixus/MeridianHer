@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { HeartIcon, LockKeyholeIcon, PhoneIcon, TriangleAlertIcon } from "lucide-react"
+import { HeartIcon, LockKeyholeIcon, TriangleAlertIcon } from "lucide-react"
 import { Alert, AlertDescription } from "@meridianher/ui/components/alert"
 import { Button } from "@meridianher/ui/components/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@meridianher/ui/components/card"
@@ -17,7 +17,7 @@ import { COMMUNITY_GUIDELINES } from "@meridianher/ui/patterns/cards"
 import { checkDisplayName, finishOnboarding, leaveUnderAge } from "./actions"
 
 type Space = { slug: string; name: string; icon: string; tone: SpaceTone }
-type Step = "welcome" | "name" | "year" | "spaces" | "guidelines" | "under-age"
+type Step = "welcome" | "name" | "year" | "spaces" | "guidelines"
 
 const STEP_LABEL: Partial<Record<Step, string>> = {
   welcome: "Step 1 of 4",
@@ -72,7 +72,7 @@ export function OnboardingFlow({
       return
     }
     if (thisYear - value < 16) {
-      go("under-age")
+      // Deletes the account, then moves to a page that needs no session
       startTransition(() => leaveUnderAge())
       return
     }
@@ -99,7 +99,6 @@ export function OnboardingFlow({
     year: { label: "Continue", run: submitYear, disabled: year.length !== 4 },
     spaces: { label: "Continue", run: () => go("guidelines"), disabled: chosen.length === 0 },
     guidelines: { label: "Join the community", run: submitAll, disabled: !accepted },
-    "under-age": null,
   }[step]
 
   return (
@@ -114,7 +113,6 @@ export function OnboardingFlow({
               year: "What year were you born?",
               spaces: "Pick your spaces",
               guidelines: "How we talk here",
-              "under-age": "We are not able to create your account yet",
             }[step]
           }
         </CardTitle>
@@ -238,21 +236,6 @@ export function OnboardingFlow({
           </>
         ) : null}
 
-        {step === "under-age" ? (
-          <>
-            <p className="text-body">
-              MeridianHer is for women aged 16 and over, so we cannot make an account for you yet. We have not kept any of your details.
-            </p>
-            <p className="text-body text-muted-foreground">
-              If something about your body is worrying you, talk to a parent, school nurse or another adult you trust. You can also
-              contact Childline in the UK any time, for free. In Nigeria, call 112 in an emergency.
-            </p>
-            <Button variant="outline" className="self-start" render={<a href="tel:08001111" />} nativeButton={false}>
-              <PhoneIcon data-icon="inline-start" aria-hidden />
-              Childline 0800 1111
-            </Button>
-          </>
-        ) : null}
       </CardContent>
 
       {action ? (

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Placeholder mark (Meridian Plum) until the MeridianHer logo is supplied -->
+  <rect width="32" height="32" rx="8" fill="#5B2E52"/>
+  <path d="M8 23V10l8 9 8-9v13" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

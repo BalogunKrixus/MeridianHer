@@ -63,8 +63,9 @@ export async function handleAuthCallback(request: NextRequest) {
   return NextResponse.redirect(new URL(`/sign-in?error=link&next=${encodeURIComponent(next)}`, url.origin))
 }
 
-export async function signOut(): Promise<never> {
+/** Signs out and goes to `to`: home in community, the sign in page in admin. */
+export async function signOut(to = "/"): Promise<never> {
   const supabase = await createClient()
   await supabase.auth.signOut()
-  redirect("/")
+  redirect(to)
 }

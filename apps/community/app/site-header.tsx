@@ -1,4 +1,4 @@
-import { Button } from "@meridianher/ui/components/button"
+import { Button, ButtonLink } from "@meridianher/ui/components/button"
 import { InitialAvatar } from "@meridianher/ui/patterns/chips"
 import { createClient } from "@meridianher/db/server"
 
@@ -29,9 +29,9 @@ export async function SiteHeader() {
             </form>
           </>
         ) : (
-          <Button size="sm" render={<a href="/sign-in" />} nativeButton={false}>
+          <ButtonLink size="sm" href="/sign-in">
             Sign in
-          </Button>
+          </ButtonLink>
         )}
       </nav>
     </header>

@@ -25,10 +25,12 @@ export type SignInHandlers = {
   onGoogle: () => Promise<void> | void
   /** Sends the magic link. Leave out to offer Google only (admin). Resolve with an error message to show it. */
   onEmail?: (email: string) => Promise<{ error?: string } | void>
+  /** Links "community guidelines" in the small print */
+  guidelinesHref?: string
 }
 
 /** Google first, email magic link second (PRD section 5). Used by the sheet and by the sign in pages. */
-function SignInForm({ onGoogle, onEmail }: SignInHandlers) {
+function SignInForm({ onGoogle, onEmail, guidelinesHref }: SignInHandlers) {
   const [email, setEmail] = React.useState("")
   const [state, setState] = React.useState<"idle" | "google" | "sending" | "sent">("idle")
   const [error, setError] = React.useState<string>()
@@ -108,7 +110,15 @@ function SignInForm({ onGoogle, onEmail }: SignInHandlers) {
       ) : null}
 
       <p className="text-xs text-muted-foreground">
-        By continuing you agree to our community guidelines and privacy notice. You must be 16 or older.
+        By continuing you agree to our{" "}
+        {guidelinesHref ? (
+          <a href={guidelinesHref} className="underline underline-offset-3 hover:text-foreground">
+            community guidelines
+          </a>
+        ) : (
+          "community guidelines"
+        )}{" "}
+        and privacy notice. You must be 16 or older.
       </p>
     </div>
   )

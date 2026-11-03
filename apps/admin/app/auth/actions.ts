@@ -7,5 +7,5 @@ export async function signInWithGoogle(next: string) {
 }
 
 export async function signOut() {
-  await auth.signOut()
+  await auth.signOut("/sign-in")
 }

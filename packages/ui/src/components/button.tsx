@@ -1,3 +1,4 @@
+import type * as React from "react"
 import { Button as ButtonPrimitive } from "@base-ui/react/button"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "../lib/utils"
@@ -54,4 +55,14 @@ function Button({
   )
 }
 
-export { Button, buttonVariants }
+/** A link styled as a button. Keeps link semantics for navigation, phone numbers and anchors. */
+function ButtonLink({
+  className,
+  variant = "default",
+  size = "default",
+  ...props
+}: React.ComponentProps<"a"> & VariantProps<typeof buttonVariants>) {
+  return <a data-slot="button" className={cn(buttonVariants({ variant, size, className }))} {...props} />
+}
+
+export { Button, ButtonLink, buttonVariants }

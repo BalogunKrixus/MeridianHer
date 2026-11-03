@@ -2,7 +2,7 @@ import * as React from "react"
 import { cn } from "../lib/utils"
 import { LifeBuoyIcon, PhoneIcon, ShieldCheckIcon } from "lucide-react"
 
-import { Button } from "../components/button"
+import { ButtonLink } from "../components/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/card"
 import {
   Empty,
@@ -42,9 +42,9 @@ function GuidelinesCard({ href = "/guidelines", className }: { href?: string; cl
         </ol>
       </CardContent>
       <CardContent>
-        <Button variant="link" className="px-0" render={<a href={href} />} nativeButton={false}>
+        <ButtonLink variant="link" className="px-0" href={href}>
           Read the full guidelines
-        </Button>
+        </ButtonLink>
       </CardContent>
     </Card>
   )
@@ -105,19 +105,14 @@ function CrisisCard({
                     {r.detail ? <span className="block text-muted-foreground">{r.detail}</span> : null}
                   </p>
                   {r.phone ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      render={<a href={`tel:${r.phone.replace(/\s/g, "")}`} />}
-                      nativeButton={false}
-                    >
+                    <ButtonLink variant="outline" size="sm" href={`tel:${r.phone.replace(/\s/g, "")}`}>
                       <PhoneIcon data-icon="inline-start" aria-hidden />
                       {r.phone}
-                    </Button>
+                    </ButtonLink>
                   ) : r.href ? (
-                    <Button variant="outline" size="sm" render={<a href={r.href} target="_blank" rel="noreferrer" />} nativeButton={false}>
+                    <ButtonLink variant="outline" size="sm" href={r.href} target="_blank" rel="noreferrer">
                       Visit
-                    </Button>
+                    </ButtonLink>
                   ) : null}
                 </li>
               ))}

@@ -35,7 +35,7 @@ export default async function SignInPage({ searchParams }: PageProps<"/sign-in">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           ) : null}
-          <SignInForm onGoogle={signInWithGoogle.bind(null, next)} onEmail={sendMagicLink.bind(null, next)} />
+          <SignInForm onGoogle={signInWithGoogle.bind(null, next)} onEmail={sendMagicLink.bind(null, next)} guidelinesHref="/guidelines" />
         </CardContent>
       </Card>
     </main>

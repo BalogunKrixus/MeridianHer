@@ -58,9 +58,10 @@ export async function finishOnboarding(input: z.input<typeof onboarding>): Promi
  * Under 16s cannot have an account (PRD section 3). The account Google or the
  * email link just created is deleted so we keep nothing about her.
  */
-export async function leaveUnderAge() {
+export async function leaveUnderAge(): Promise<never> {
   const supabase = await createClient()
   const { data } = await supabase.auth.getUser()
   await supabase.auth.signOut()
   if (data.user) await createSecretClient().auth.admin.deleteUser(data.user.id)
+  redirect("/welcome/too-young")
 }

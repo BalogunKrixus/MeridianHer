@@ -3,7 +3,7 @@
 import * as React from "react"
 import { MoonIcon, SunIcon } from "lucide-react"
 
-import { Button } from "../components/button"
+import { ButtonLink } from "../components/button"
 import { ToggleGroup, ToggleGroupItem } from "../components/toggle-group"
 import { TooltipProvider } from "../components/tooltip"
 import { AdminPatterns } from "./patterns-admin"
@@ -70,9 +70,9 @@ export function DesignGallery({ app }: { app: "community" | "admin" }) {
         </div>
         <nav aria-label="Gallery sections" className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4 pb-2 sm:px-6">
           {NAV.map((n) => (
-            <Button key={n.id} variant="ghost" size="sm" render={<a href={`#${n.id}`} />} nativeButton={false}>
+            <ButtonLink key={n.id} variant="ghost" size="sm" href={`#${n.id}`}>
               {n.label}
-            </Button>
+            </ButtonLink>
           ))}
         </nav>
       </header>
