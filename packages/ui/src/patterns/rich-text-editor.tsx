@@ -21,6 +21,7 @@ function RichTextEditor({
   invalid,
   className,
   "aria-describedby": describedBy,
+  "aria-label": ariaLabel,
 }: {
   id?: string
   defaultValue?: JSONContent
@@ -30,6 +31,7 @@ function RichTextEditor({
   invalid?: boolean
   className?: string
   "aria-describedby"?: string
+  "aria-label"?: string
 }) {
   const editor = useEditor({
     immediatelyRender: false,
@@ -53,6 +55,7 @@ function RichTextEditor({
         "aria-multiline": "true",
         ...(placeholder ? { "aria-placeholder": placeholder } : {}),
         ...(describedBy ? { "aria-describedby": describedBy } : {}),
+        ...(ariaLabel ? { "aria-label": ariaLabel } : {}),
         ...(invalid ? { "aria-invalid": "true" } : {}),
         class:
           "min-h-32 px-3 py-2.5 text-body outline-none [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5 [&_a]:text-primary [&_a]:underline [&_p+p]:mt-2",
@@ -108,7 +111,15 @@ function RichTextEditor({
     >
       <div role="toolbar" aria-label="Formatting" className="flex flex-wrap items-center gap-0.5 border-b border-border p-1">
         {tools.map(({ label, icon: Icon, pressed, run }) => (
-          <Toggle key={label} size="sm" aria-label={label} pressed={!!pressed} onPressedChange={run}>
+          <Toggle
+            key={label}
+            size="sm"
+            aria-label={label}
+            pressed={!!pressed}
+            onPressedChange={run}
+            // Keep focus (and the caret) in the editor while formatting
+            onMouseDown={(e) => e.preventDefault()}
+          >
             <Icon />
           </Toggle>
         ))}

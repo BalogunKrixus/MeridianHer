@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { cn } from "../lib/utils"
-import { SearchIcon, SparklesIcon } from "lucide-react"
+import { SearchIcon, SparklesIcon, TriangleAlertIcon } from "lucide-react"
 
 import { Alert, AlertDescription, AlertTitle } from "../components/alert"
 import { Button } from "../components/button"
@@ -23,6 +23,7 @@ import { Switch } from "../components/switch"
 import { ToggleGroup, ToggleGroupItem } from "../components/toggle-group"
 import type { SpaceTone } from "../lib/spaces"
 import { CONTENT_WARNING_LABELS, type ContentWarningType } from "./content-warning-blur"
+import { plainText } from "../lib/rich-text"
 import { RichTextEditor, type JSONContent } from "./rich-text-editor"
 
 export type ComposerSpace = {
@@ -55,7 +56,7 @@ function Composer({
   spaces,
   defaultSpace,
   similar,
-  submitting,
+  draftKey,
   onSubmit,
   className,
 }: {
@@ -63,8 +64,10 @@ function Composer({
   defaultSpace?: string
   /** "Others asked this" results for the current title */
   similar?: React.ReactNode
-  submitting?: boolean
-  onSubmit?: (values: ComposerValues) => void
+  /** localStorage key; when set, the draft autosaves every 5 seconds and is restored on return (PRD 6.5) */
+  draftKey?: string
+  /** Resolve with an error message to show it; resolve without one on success and the draft is cleared */
+  onSubmit?: (values: ComposerValues) => Promise<{ error?: string } | void>
   className?: string
 }) {
   const [type, setType] = React.useState<ComposerValues["type"]>("question")
@@ -77,6 +80,69 @@ function Composer({
   const [askExpert, setAskExpert] = React.useState(false)
   const [anonymous, setAnonymous] = React.useState(false)
   const [touched, setTouched] = React.useState(false)
+  const [pending, setPending] = React.useState(false)
+  const [formError, setFormError] = React.useState<string>()
+  const [restoredBody, setRestoredBody] = React.useState<JSONContent>()
+  const [editorKey, setEditorKey] = React.useState(0)
+
+  // Keep anything typed before the page finished loading (slow connections)
+  const titleRef = React.useRef<HTMLInputElement>(null)
+  React.useEffect(() => {
+    const early = titleRef.current?.value
+    if (early) setTitle(early)
+  }, [])
+
+  // Restore a saved draft once, on the client
+  React.useEffect(() => {
+    if (!draftKey) return
+    try {
+      const raw = window.localStorage.getItem(draftKey)
+      if (!raw) return
+      const d = JSON.parse(raw) as Partial<ComposerValues>
+      if (d.type) setType(d.type)
+      if (d.space && !defaultSpace) setSpace(d.space)
+      if (d.title && !titleRef.current?.value) setTitle(d.title)
+      if (d.tags) setTags(d.tags)
+      if (d.contentWarning) {
+        setWarn(true)
+        setWarnType(d.contentWarning)
+      }
+      if (d.askExpert) setAskExpert(true)
+      if (d.anonymous) setAnonymous(true)
+      if (d.body) {
+        setBody({ json: d.body, text: plainText(d.body) })
+        setRestoredBody(d.body)
+        setEditorKey((k) => k + 1)
+      }
+    } catch {
+      // Storage unavailable or draft unreadable: start fresh
+    }
+  }, [draftKey, defaultSpace])
+
+  const latest = React.useRef<ComposerValues | null>(null)
+  latest.current = {
+    type,
+    space,
+    title,
+    body: body?.json,
+    tags,
+    contentWarning: warn ? warnType : null,
+    askExpert,
+    anonymous,
+  }
+  React.useEffect(() => {
+    if (!draftKey) return
+    const id = window.setInterval(() => {
+      const d = latest.current
+      if (!d || (!d.title.trim() && !d.body)) return
+      try {
+        window.localStorage.setItem(draftKey, JSON.stringify(d))
+      } catch {
+        // Storage full or blocked: drafts are a convenience only
+      }
+    }, 5000)
+    return () => window.clearInterval(id)
+  }, [draftKey])
 
   const current = spaces.find((s) => s.slug === space)
   const titleLen = title.trim().length
@@ -93,11 +159,13 @@ function Composer({
   const hasErrors = Object.values(errors).some(Boolean)
   const expertEligible = type === "question" && !!current?.askExpertEnabled
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault()
     setTouched(true)
-    if (hasErrors) return
-    onSubmit?.({
+    if (hasErrors || !onSubmit) return
+    setPending(true)
+    setFormError(undefined)
+    const result = await onSubmit({
       type,
       space,
       title: title.trim(),
@@ -107,6 +175,18 @@ function Composer({
       askExpert: expertEligible && askExpert,
       anonymous,
     })
+    setPending(false)
+    if (result?.error) {
+      setFormError(result.error)
+      return
+    }
+    if (draftKey) {
+      try {
+        window.localStorage.removeItem(draftKey)
+      } catch {
+        // Nothing to clear
+      }
+    }
   }
 
   return (
@@ -162,6 +242,7 @@ function Composer({
         <Field data-invalid={touched && !!errors.title}>
           <FieldLabel htmlFor="composer-title">Title</FieldLabel>
           <Input
+            ref={titleRef}
             id="composer-title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -189,6 +270,8 @@ function Composer({
             Details <span className="font-normal text-muted-foreground">(optional)</span>
           </FieldLabel>
           <RichTextEditor
+            key={editorKey}
+            defaultValue={restoredBody}
             id="composer-body"
             onChange={setBody}
             placeholder="Add anything that helps others understand. Say the real words; this is a safe place."
@@ -268,10 +351,17 @@ function Composer({
         </FieldSet>
       </FieldGroup>
 
+      {formError ? (
+        <Alert variant="destructive" role="alert">
+          <TriangleAlertIcon aria-hidden />
+          <AlertDescription>{formError}</AlertDescription>
+        </Alert>
+      ) : null}
+
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-xs text-muted-foreground">Drafts save on this device as you type.</p>
-        <Button type="submit" size="lg" disabled={submitting} className="sm:min-w-40">
-          {submitting ? <Spinner data-icon="inline-start" /> : null}
+        {draftKey ? <p className="text-xs text-muted-foreground">Drafts save on this device as you type.</p> : null}
+        <Button type="submit" size="lg" disabled={pending} className="sm:ml-auto sm:min-w-40">
+          {pending ? <Spinner data-icon="inline-start" /> : null}
           {type === "question" ? "Ask your question" : "Share your post"}
         </Button>
       </div>

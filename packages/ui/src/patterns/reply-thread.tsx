@@ -22,10 +22,19 @@ export type ExpertAnswerData = {
   body: React.ReactNode
   timeAgo: string
   reactions: Record<ReactionKind, number>
+  myReactions?: ReactionKind[]
 }
 
 /** Pinned under the post when an expert has answered (PRD 6.6). Disclaimer is always attached. */
-function ExpertAnswer({ answer, className }: { answer: ExpertAnswerData; className?: string }) {
+function ExpertAnswer({
+  answer,
+  onReact,
+  className,
+}: {
+  answer: ExpertAnswerData
+  onReact?: (kind: ReactionKind, active: boolean) => void | boolean | Promise<void | boolean>
+  className?: string
+}) {
   const nameEl = answer.expert.href ? (
     <a href={answer.expert.href} className="relative tap-target underline-offset-4 hover:underline">
       {answer.expert.name}
@@ -58,7 +67,7 @@ function ExpertAnswer({ answer, className }: { answer: ExpertAnswerData; classNa
       <CardContent className="space-y-3">
         <Separator className="bg-expert/20" />
         <p className="text-small text-muted-foreground">{EXPERT_DISCLAIMER}</p>
-        <ReactionBar counts={answer.reactions} size="sm" />
+        <ReactionBar counts={answer.reactions} mine={answer.myReactions} size="sm" onReact={onReact} />
       </CardContent>
     </Card>
   )
@@ -70,33 +79,41 @@ export type ReplyData = {
   body: React.ReactNode
   timeAgo: string
   reactions: Record<ReactionKind, number>
+  myReactions?: ReactionKind[]
   expertCategory?: string
+  expertEnded?: boolean
   helpedMe?: boolean
-  removed?: { reason: string }
+  removed?: { reason?: string }
   replies?: ReplyData[]
 }
 
-function ReplyItem({
-  reply,
-  depth,
-  onReply,
-  onReport,
-}: {
-  reply: ReplyData
-  depth: 0 | 1
+type ReplyHandlers = {
   onReply?: (id: string) => void
   onReport?: (id: string) => void
-}) {
+  onReact?: (id: string, kind: ReactionKind, active: boolean) => void | boolean | Promise<void | boolean>
+}
+
+function ReplyItem({ reply, depth, ...handlers }: ReplyHandlers & { reply: ReplyData; depth: 0 | 1 }) {
+  const { onReply, onReport, onReact } = handlers
   const name = reply.author.asTeam
     ? "MeridianHer Team"
     : reply.author.anonymous
       ? "Anonymous member"
       : reply.author.displayName
+  const children =
+    depth === 0 && reply.replies?.length ? (
+      <ul className="mt-1 border-l-2 border-border pl-4">
+        {reply.replies.map((child) => (
+          <ReplyItem key={child.id} reply={child} depth={1} {...handlers} />
+        ))}
+      </ul>
+    ) : null
 
   if (reply.removed) {
     return (
       <li className="py-3 text-sm text-muted-foreground italic">
-        This reply was removed ({reply.removed.reason}).
+        This reply was removed{reply.removed.reason ? ` (${reply.removed.reason})` : ""}.
+        {children}
       </li>
     )
   }
@@ -109,7 +126,7 @@ function ReplyItem({
           <header className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span className="text-sm font-medium text-foreground">{name}</span>
             <span className="text-xs text-muted-foreground">{reply.timeAgo}</span>
-            {reply.expertCategory ? <ExpertBadge category={reply.expertCategory} /> : null}
+            {reply.expertCategory ? <ExpertBadge category={reply.expertCategory} ended={reply.expertEnded} /> : null}
             {reply.author.asTeam ? <TeamBadge /> : null}
             {reply.helpedMe ? (
               <Badge variant="soft">
@@ -118,26 +135,27 @@ function ReplyItem({
               </Badge>
             ) : null}
           </header>
-          <div className="mt-1.5 space-y-2 text-body text-foreground">{reply.body}</div>
+          <div className="mt-1.5 text-body text-foreground">{reply.body}</div>
           <div className="mt-2 flex flex-wrap items-center gap-1">
-            <ReactionBar counts={reply.reactions} size="sm" />
-            {depth === 0 ? (
-              <Button variant="ghost" size="sm" onClick={() => onReply?.(reply.id)}>
+            <ReactionBar
+              counts={reply.reactions}
+              mine={reply.myReactions}
+              size="sm"
+              onReact={onReact ? (kind, active) => onReact(reply.id, kind, active) : undefined}
+            />
+            {depth === 0 && onReply ? (
+              <Button variant="ghost" size="sm" onClick={() => onReply(reply.id)}>
                 <MessageCircleReplyIcon data-icon="inline-start" aria-hidden />
                 Reply
               </Button>
             ) : null}
-            <Button variant="ghost" size="icon-sm" aria-label="Report reply" onClick={() => onReport?.(reply.id)}>
-              <FlagIcon />
-            </Button>
+            {onReport ? (
+              <Button variant="ghost" size="icon-sm" aria-label="Report reply" onClick={() => onReport(reply.id)}>
+                <FlagIcon />
+              </Button>
+            ) : null}
           </div>
-          {depth === 0 && reply.replies?.length ? (
-            <ul className="mt-1 border-l-2 border-border pl-4">
-              {reply.replies.map((child) => (
-                <ReplyItem key={child.id} reply={child} depth={1} onReply={onReply} onReport={onReport} />
-              ))}
-            </ul>
-          ) : null}
+          {children}
         </div>
       </article>
     </li>
@@ -147,19 +165,16 @@ function ReplyItem({
 /** Threaded replies, two levels deep (PRD 6.6). */
 function ReplyThread({
   replies,
-  onReply,
-  onReport,
   className,
-}: {
+  ...handlers
+}: ReplyHandlers & {
   replies: ReplyData[]
-  onReply?: (id: string) => void
-  onReport?: (id: string) => void
   className?: string
 }) {
   return (
     <ul className={cn("divide-y divide-border", className)}>
       {replies.map((r) => (
-        <ReplyItem key={r.id} reply={r} depth={0} onReply={onReply} onReport={onReport} />
+        <ReplyItem key={r.id} reply={r} depth={0} {...handlers} />
       ))}
     </ul>
   )

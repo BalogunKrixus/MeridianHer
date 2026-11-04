@@ -44,17 +44,19 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="card-title"
-      className={cn(
-        "font-heading text-base leading-snug font-medium group-data-[size=sm]/card:text-sm",
-        className
-      )}
-      {...props}
-    />
-  )
+/** `render={<h1 />}` (or h2, h3) when the title is a heading on the page. */
+function CardTitle({ className, render, ...props }: useRender.ComponentProps<"div">) {
+  return useRender({
+    defaultTagName: "div",
+    render,
+    props: mergeProps<"div">(
+      {
+        className: cn("font-heading text-base leading-snug font-medium group-data-[size=sm]/card:text-sm", className),
+      },
+      props
+    ),
+    state: { slot: "card-title" },
+  })
 }
 
 function CardDescription({ className, ...props }: React.ComponentProps<"div">) {

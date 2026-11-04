@@ -26,20 +26,25 @@ function ReactionBar({
 }: {
   counts: Record<ReactionKind, number>
   mine?: ReactionKind[]
-  onReact?: (kind: ReactionKind, active: boolean) => void
+  /** Return false to undo the optimistic change, for example when she must sign in first */
+  onReact?: (kind: ReactionKind, active: boolean) => void | boolean | Promise<void | boolean>
   size?: "sm" | "default"
   className?: string
 }) {
   const [active, setActive] = React.useState<ReactionKind[]>(mine)
   const [local, setLocal] = React.useState(counts)
 
-  function change(next: ReactionKind[]) {
+  async function change(next: ReactionKind[]) {
     const kind = REACTIONS.find((r) => next.includes(r.kind) !== active.includes(r.kind))?.kind
     if (!kind) return
     const on = next.includes(kind)
+    const before = { active, local }
     setActive(next)
     setLocal((c) => ({ ...c, [kind]: Math.max(0, c[kind] + (on ? 1 : -1)) }))
-    onReact?.(kind, on)
+    if ((await onReact?.(kind, on)) === false) {
+      setActive(before.active)
+      setLocal(before.local)
+    }
   }
 
   return (

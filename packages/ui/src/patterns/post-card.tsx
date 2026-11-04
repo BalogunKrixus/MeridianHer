@@ -4,8 +4,8 @@ import * as React from "react"
 import { cn } from "../lib/utils"
 import {
   BookmarkIcon,
+  CheckIcon,
   EllipsisIcon,
-  EyeOffIcon,
   FlagIcon,
   HeartIcon,
   LinkIcon,
@@ -42,7 +42,7 @@ export type PostCardData = {
   edited?: boolean
   replyCount: number
   reactionCount: number
-  expertAnswer?: { category: string }
+  expertAnswer?: { category?: string }
   contentWarning?: ContentWarningType
   saved?: boolean
 }
@@ -52,22 +52,33 @@ function PostCard({
   post,
   variant = "default",
   onSave,
-  onShare,
   onReport,
-  onHide,
-  onCopyLink,
   className,
 }: {
   post: PostCardData
   variant?: "default" | "pinned" | "announcement"
-  onSave?: (saved: boolean) => void
-  onShare?: () => void
+  /** Return false to keep the current state, for example when she must sign in first */
+  onSave?: (saved: boolean) => boolean | Promise<boolean>
   onReport?: () => void
-  onHide?: () => void
-  onCopyLink?: () => void
   className?: string
 }) {
   const [saved, setSaved] = React.useState(!!post.saved)
+  const [copied, setCopied] = React.useState(false)
+
+  async function share(mode: "share" | "copy") {
+    const url = new URL(post.href, window.location.origin).toString()
+    if (mode === "share" && navigator.share) {
+      await navigator.share({ title: post.title, url }).catch(() => {})
+      return
+    }
+    try {
+      await navigator.clipboard.writeText(url)
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 2000)
+    } catch {
+      window.prompt("Copy this link", url)
+    }
+  }
   const name = post.author.asTeam
     ? "MeridianHer Team"
     : post.author.anonymous
@@ -145,37 +156,41 @@ function PostCard({
           {post.replyCount}
           <span className="sr-only">{post.replyCount === 1 ? "reply" : "replies"}</span>
         </span>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="ml-auto"
-          aria-pressed={saved}
-          aria-label={saved ? "Saved" : "Save"}
-          onClick={() => {
-            setSaved(!saved)
-            onSave?.(!saved)
-          }}
-        >
-          <BookmarkIcon className={cn(saved && "fill-current text-primary")} />
-        </Button>
-        <Button variant="ghost" size="icon" aria-label="Share" onClick={onShare}>
-          <Share2Icon />
+        <span role="status" className="ml-auto text-xs">
+          {copied ? "Link copied" : null}
+        </span>
+        {onSave ? (
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-pressed={saved}
+            aria-label={saved ? "Saved" : "Save"}
+            onClick={async () => {
+              if ((await onSave(!saved)) !== false) setSaved(!saved)
+            }}
+          >
+            <BookmarkIcon className={cn(saved && "fill-current text-primary")} />
+          </Button>
+        ) : null}
+        <Button variant="ghost" size="icon" aria-label="Share" onClick={() => share("share")}>
+          {copied ? <CheckIcon /> : <Share2Icon />}
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger render={<Button variant="ghost" size="icon" aria-label="More actions" />}>
             <EllipsisIcon />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-44">
-            <DropdownMenuItem onClick={onCopyLink}>
+            <DropdownMenuItem onClick={() => share("copy")}>
               <LinkIcon /> Copy link
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={onHide}>
-              <EyeOffIcon /> Hide
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive" onClick={onReport}>
-              <FlagIcon /> Report
-            </DropdownMenuItem>
+            {onReport ? (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem variant="destructive" onClick={onReport}>
+                  <FlagIcon /> Report
+                </DropdownMenuItem>
+              </>
+            ) : null}
           </DropdownMenuContent>
         </DropdownMenu>
       </CardContent>

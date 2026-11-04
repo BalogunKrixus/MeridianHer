@@ -14,6 +14,9 @@ import { ContentWarningBlur } from "../patterns/content-warning-blur"
 import { PostCard } from "../patterns/post-card"
 import { ReactionBar } from "../patterns/reaction-bar"
 import { ExpertAnswer, ReplyThread } from "../patterns/reply-thread"
+import { ReplyComposer } from "../patterns/reply-composer"
+import { ReportSheet } from "../patterns/report-sheet"
+import { RichTextContent } from "../patterns/rich-text-content"
 import { SignInSheet } from "../patterns/sign-in-sheet"
 import { Row, Section, Specimen } from "./layout"
 import {
@@ -22,10 +25,12 @@ import {
   sampleExpertAnswer,
   samplePosts,
   sampleReplies,
+  sampleRichText,
 } from "./sample-data"
 
 export function CommunityPatterns() {
   const [signInOpen, setSignInOpen] = React.useState(false)
+  const [reportOpen, setReportOpen] = React.useState(false)
 
   return (
     <Section id="community" title="Community patterns" description="Built once in packages/ui and shared. Demo content only.">
@@ -75,9 +80,9 @@ export function CommunityPatterns() {
 
       <Specimen title="Post card" note="Announcement, pinned, expert answered, edited and content warning." bare className="flex max-w-[680px] flex-col gap-4">
         <PostCard post={sampleAnnouncement} variant="announcement" />
-        <PostCard post={samplePosts[0]} variant="pinned" />
+        <PostCard post={samplePosts[0]} variant="pinned" onSave={() => true} onReport={() => setReportOpen(true)} />
         {samplePosts.slice(1).map((p) => (
-          <PostCard key={p.id} post={p} />
+          <PostCard key={p.id} post={p} onSave={() => true} onReport={() => setReportOpen(true)} />
         ))}
       </Specimen>
 
@@ -93,6 +98,22 @@ export function CommunityPatterns() {
             <ReplyThread replies={sampleReplies} />
           </CardContent>
         </Card>
+      </Specimen>
+
+      <div className="grid items-start gap-10 lg:grid-cols-2">
+        <Specimen title="Reply composer" note="Restricted rich text. Shows who she is replying to, with a way back to the post.">
+          <ReplyComposer replyingTo="Golden Moss" onCancelReplyTo={() => {}} onSubmit={async () => {}} />
+        </Specimen>
+        <Specimen title="Report sheet" note="Reasons from PRD section 8. The reporter is never revealed.">
+          <Button variant="outline" onClick={() => setReportOpen(true)}>
+            Report a post
+          </Button>
+          <ReportSheet open={reportOpen} onOpenChange={setReportOpen} onSubmit={async () => {}} />
+        </Specimen>
+      </div>
+
+      <Specimen title="Rich text" note="Stored as JSON, rendered as React elements. Bold, italic, lists and https links only.">
+        <RichTextContent doc={sampleRichText} />
       </Specimen>
 
       <Specimen title="Content warning" note="Blurred, inert and hidden from screen readers until revealed. The warning itself is announced.">

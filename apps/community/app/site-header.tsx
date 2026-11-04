@@ -1,27 +1,28 @@
+import { PenLineIcon } from "lucide-react"
 import { Button, ButtonLink } from "@meridianher/ui/components/button"
 import { InitialAvatar } from "@meridianher/ui/patterns/chips"
-import { createClient } from "@meridianher/db/server"
 
+import { getViewer } from "../lib/data"
 import { signOut } from "./auth/actions"
 
 export async function SiteHeader() {
-  const supabase = await createClient()
-  const { data } = await supabase.auth.getClaims()
-  const userId = data?.claims.sub
-  const { data: profile } = userId
-    ? await supabase.from("profiles").select("display_name").eq("user_id", userId).single()
-    : { data: null }
+  const viewer = await getViewer()
+  const name = viewer?.onboarding_complete ? viewer.display_name : null
 
   return (
-    <header className="border-b">
-      <nav aria-label="Main" className="mx-auto flex h-14 max-w-5xl items-center gap-3 px-4">
+    <header className="border-b bg-background">
+      <nav aria-label="Main" className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-4">
         <a href="/" className="mr-auto text-lg font-semibold tracking-tight">
           MeridianHer
         </a>
-        {profile?.display_name ? (
+        <ButtonLink size="sm" href="/ask">
+          <PenLineIcon data-icon="inline-start" aria-hidden />
+          Ask a question
+        </ButtonLink>
+        {name ? (
           <>
-            <InitialAvatar name={profile.display_name} size="sm" />
-            <span className="text-sm font-medium">{profile.display_name}</span>
+            <InitialAvatar name={name} size="sm" className="ml-2 hidden sm:flex" />
+            <span className="hidden text-sm font-medium sm:inline">{name}</span>
             <form action={signOut}>
               <Button type="submit" variant="ghost" size="sm">
                 Sign out
@@ -29,7 +30,7 @@ export async function SiteHeader() {
             </form>
           </>
         ) : (
-          <ButtonLink size="sm" href="/sign-in">
+          <ButtonLink size="sm" variant="outline" href="/sign-in">
             Sign in
           </ButtonLink>
         )}
