@@ -52,6 +52,10 @@ export type QueueItemData = {
   author: { displayName: string; accountAge: string; pastWarnings: number }
   reports?: { reason: string; count: number }[]
   scores?: { label: string; value: number }[]
+  /** Why automation held or flagged it, for example "Unapproved link" */
+  flags?: { label: string; detail?: string }[]
+  /** Where it sits in the community, to read the whole thread */
+  href?: string
   receivedAgo: string
   claimedBy?: string
 }
@@ -109,6 +113,11 @@ function QueueItem({
           </Badge>
           <span className="text-muted-foreground capitalize">{item.targetType}</span>
           <span className="text-muted-foreground">· {item.receivedAgo}</span>
+          {item.href ? (
+            <a href={item.href} target="_blank" rel="noreferrer" className="text-primary underline-offset-4 hover:underline">
+              View in community
+            </a>
+          ) : null}
           <span className="ml-auto">
             {item.claimedBy ? (
               <span className="text-muted-foreground">Claimed by {item.claimedBy}</span>
@@ -124,7 +133,7 @@ function QueueItem({
         {item.context ? (
           <p className="truncate border-l-2 border-border pl-3 text-small text-muted-foreground">In reply to: {item.context}</p>
         ) : null}
-        <blockquote className="rounded-lg bg-muted p-3 text-body">{item.content}</blockquote>
+        <blockquote className="rounded-lg bg-muted p-3 text-body whitespace-pre-line">{item.content}</blockquote>
 
         <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-small sm:grid-cols-4">
           <div>
@@ -148,8 +157,14 @@ function QueueItem({
           </div>
         </dl>
 
-        {item.reports?.length || item.scores?.length ? (
+        {item.reports?.length || item.scores?.length || item.flags?.length ? (
           <div className="flex flex-wrap gap-1.5">
+            {item.flags?.map((f) => (
+              <Badge key={f.label + (f.detail ?? "")} variant="warning" title={f.detail}>
+                {f.label}
+                {f.detail ? `: ${f.detail}` : null}
+              </Badge>
+            ))}
             {item.reports?.map((r) => (
               <Badge key={r.reason} variant="outline">
                 {r.reason} × {r.count}

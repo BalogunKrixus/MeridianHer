@@ -1492,6 +1492,14 @@ export type Database = {
         }
         Returns: undefined
       }
+      escalate_item: {
+        Args: {
+          kind: Database["public"]["Enums"]["target_type"]
+          target: string
+          note: string
+        }
+        Returns: undefined
+      }
       export_my_data: {
         Args: never
         Returns: Json
@@ -1669,7 +1677,7 @@ export type Database = {
       expert_category: "gp" | "gynaecologist" | "midwife" | "fertility_specialist" | "dietitian" | "nutritionist" | "therapist" | "pelvic_physio" | "pharmacist" | "other"
       expert_status: "active" | "suspended" | "revoked"
       flag_priority: "urgent" | "normal"
-      flag_source: "classifier" | "keyword" | "new_account" | "link" | "threshold"
+      flag_source: "classifier" | "keyword" | "new_account" | "link" | "threshold" | "escalated"
       member_status: "active" | "muted" | "banned"
       post_type: "question" | "discussion" | "announcement"
       reaction_kind: "hug" | "same" | "helpful"

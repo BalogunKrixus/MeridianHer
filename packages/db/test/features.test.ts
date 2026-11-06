@@ -181,6 +181,17 @@ describe("staff tools", () => {
     expect(rows[0]).toEqual({ status: "hidden", open: 0, notified: 1, logged: 1 })
   })
 
+  it("escalating needs a note and puts the item in the urgent tab", async () => {
+    const author = await db.createUser()
+    const mod = await db.createUser({ role: "moderator" })
+    const { id } = await postWith(author, "is this dosage safe for me")
+    expect(await db.as(mod, (q) => failure(q, "select public.escalate_item('post', $1, '')", [id]))).toMatch(/reason_required/)
+    await db.as(mod, (q) => q.query("select public.escalate_item('post', $1, 'Needs a clinician view')", [id]))
+    const queue = await db.as(mod, (q) => q.query<{ q: { target_id: string }[] }>("select public.staff_queue('urgent') as q"))
+    expect(queue.rows[0].q.map((i) => i.target_id)).toContain(id)
+    expect(await flags(id)).toContainEqual({ source: "escalated", priority: "urgent" })
+  })
+
   it("muted members cannot post until the mute ends, and moderators cannot sanction admins", async () => {
     const m = await db.createUser()
     const mod = await db.createUser({ role: "moderator" })

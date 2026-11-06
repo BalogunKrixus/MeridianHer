@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@meri
 import { SignInForm } from "@meridianher/ui/patterns/sign-in-sheet"
 import { safeNext } from "@meridianher/db/proxy"
 
-import { signInWithGoogle, signOut } from "../auth/actions"
+import { signInWithGoogle, signOut } from "@/lib/auth-actions"
 
 export const metadata: Metadata = { title: "Sign in" }
 
