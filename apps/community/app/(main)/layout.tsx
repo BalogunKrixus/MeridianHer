@@ -12,8 +12,9 @@ export default async function MainLayout({ children }: LayoutProps<"/">) {
   const [viewer, unread, banner] = await Promise.all([getViewer(), getUnreadCount(), getBanner()])
   const member = viewer?.onboarding_complete ? viewer : null
   if (member) {
+    // The client reads cookies, which must happen during the render, not after it
+    const supabase = await createClient()
     after(async () => {
-      const supabase = await createClient()
       await supabase.rpc("touch_last_active")
     })
   }

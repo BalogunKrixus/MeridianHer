@@ -8,9 +8,12 @@ import { FilterBar, type FilterDef } from "@meridianher/ui/patterns/filter-bar"
 export function UrlFilters({
   filters,
   searchPlaceholder,
+  defaults = {},
   actions,
 }: {
   filters: FilterDef[]
+  /** Shown when the address has no value, for example the default date range */
+  defaults?: Record<string, string>
   searchPlaceholder?: string
   actions?: React.ReactNode
 }) {
@@ -33,7 +36,7 @@ export function UrlFilters({
   return (
     <FilterBar
       filters={filters}
-      values={Object.fromEntries(filters.map((f) => [f.id, params.get(f.id)]))}
+      values={Object.fromEntries(filters.map((f) => [f.id, params.get(f.id) ?? defaults[f.id] ?? null]))}
       onValuesChange={push}
       searchPlaceholder={searchPlaceholder}
       search={searchPlaceholder ? search : undefined}

@@ -40,9 +40,11 @@ export default async function NotificationsPage() {
     .limit(50)
   const items = data ?? []
   // Opening the page counts as reading: the dots show for this visit, the badge clears on the next page
-  if (items.some((n) => !n.read_at)) after(async () => {
-    await supabase.rpc("mark_notifications_read")
-  })
+  if (items.some((n) => !n.read_at)) {
+    after(async () => {
+      await supabase.rpc("mark_notifications_read")
+    })
+  }
 
   return (
     <main className="mx-auto flex max-w-[680px] flex-col gap-5 px-4 py-8">

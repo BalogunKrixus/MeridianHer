@@ -57,6 +57,7 @@ export default async function AuditPage({ searchParams }: PageProps<"/audit">) {
         }
       />
       <UrlFilters
+        defaults={{ range: "30" }}
         searchPlaceholder="Search actions and reasons"
         filters={[
           { id: "range", label: "When", options: RANGES },

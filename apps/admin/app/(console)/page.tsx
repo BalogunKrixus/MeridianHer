@@ -71,6 +71,7 @@ export default async function Overview({ searchParams }: PageProps<"/">) {
     <div className="flex flex-col gap-6 p-6">
       <PageHeader title="Overview" description="Is the community healthy today?" />
       <UrlFilters
+        defaults={{ range: "7" }}
         filters={[
           { id: "range", label: "Date range", options: RANGES },
           { id: "space", label: "Space", options: (spaces ?? []).map((s) => ({ label: s.name, value: s.id })) },

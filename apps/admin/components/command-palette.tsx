@@ -6,6 +6,7 @@ import { MonitorIcon, MoonIcon, SearchIcon, SunIcon } from "lucide-react"
 import { useTheme } from "next-themes"
 import { Button } from "@meridianher/ui/components/button"
 import {
+  Command,
   CommandDialog,
   CommandEmpty,
   CommandGroup,
@@ -80,55 +81,57 @@ export function CommandPalette({ isAdmin }: { isAdmin: boolean }) {
         <Kbd className="ml-auto">⌘K</Kbd>
       </Button>
       <CommandDialog open={open} onOpenChange={setOpen} title="Command palette" description="Search members and posts, or jump anywhere">
-        <CommandInput placeholder="Search members, posts and experts, or type a command" value={query} onValueChange={setQuery} />
-        <CommandList>
-          <CommandEmpty>No matching command.</CommandEmpty>
-          {query.trim().length > 1 ? (
-            <CommandGroup heading="Search">
-              <CommandItem value={`search ${query}`} onSelect={() => go(`/search?q=${encodeURIComponent(query.trim())}`)}>
-                <SearchIcon />
-                Search everywhere for “{query.trim()}”
-              </CommandItem>
+        <Command>
+          <CommandInput placeholder="Search members, posts and experts, or type a command" value={query} onValueChange={setQuery} />
+          <CommandList>
+            <CommandEmpty>No matching command.</CommandEmpty>
+            <CommandGroup heading="Go to">
+              {NAV.filter((n) => isAdmin || !n.admin).map(({ href, label, icon: Icon, shortcut }) => (
+                <CommandItem key={href} value={label} onSelect={() => go(href)}>
+                  <Icon />
+                  {label}
+                  <CommandShortcut>{shortcut}</CommandShortcut>
+                </CommandItem>
+              ))}
             </CommandGroup>
-          ) : null}
-          <CommandGroup heading="Go to">
-            {NAV.filter((n) => isAdmin || !n.admin).map(({ href, label, icon: Icon, shortcut }) => (
-              <CommandItem key={href} value={label} onSelect={() => go(href)}>
-                <Icon />
-                {label}
-                <CommandShortcut>{shortcut}</CommandShortcut>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-          <CommandSeparator />
-          <CommandGroup heading="Actions">
-            {QUICK.filter((q) => isAdmin || !q.admin).map((q) => (
-              <CommandItem key={q.href} value={q.label} onSelect={() => go(q.href)}>
-                {q.label}
-              </CommandItem>
-            ))}
-          </CommandGroup>
-          <CommandSeparator />
-          <CommandGroup heading="Appearance">
-            {[
-              { value: "light", label: "Light", icon: SunIcon },
-              { value: "dark", label: "Dark", icon: MoonIcon },
-              { value: "system", label: "Match my device", icon: MonitorIcon },
-            ].map(({ value, label, icon: Icon }) => (
-              <CommandItem
-                key={value}
-                value={`theme ${label}`}
-                onSelect={() => {
-                  setTheme(value)
-                  setOpen(false)
-                }}
-              >
-                <Icon />
-                {label}
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </CommandList>
+            <CommandSeparator />
+            <CommandGroup heading="Actions">
+              {QUICK.filter((q) => isAdmin || !q.admin).map((q) => (
+                <CommandItem key={q.href} value={q.label} onSelect={() => go(q.href)}>
+                  {q.label}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+            <CommandSeparator />
+            <CommandGroup heading="Appearance">
+              {[
+                { value: "light", label: "Light", icon: SunIcon },
+                { value: "dark", label: "Dark", icon: MoonIcon },
+                { value: "system", label: "Match my device", icon: MonitorIcon },
+              ].map(({ value, label, icon: Icon }) => (
+                <CommandItem
+                  key={value}
+                  value={`theme ${label}`}
+                  onSelect={() => {
+                    setTheme(value)
+                    setOpen(false)
+                  }}
+                >
+                  <Icon />
+                  {label}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+            {query.trim().length > 1 ? (
+              <CommandGroup heading="Search">
+                <CommandItem value={`search everywhere ${query}`} onSelect={() => go(`/search?q=${encodeURIComponent(query.trim())}`)}>
+                  <SearchIcon />
+                  Search everywhere for “{query.trim()}”
+                </CommandItem>
+              </CommandGroup>
+            ) : null}
+          </CommandList>
+        </Command>
       </CommandDialog>
     </>
   )

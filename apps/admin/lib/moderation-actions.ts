@@ -58,7 +58,7 @@ export async function decide(
     done++
   }
   revalidatePath("/", "layout")
-  return { done }
+  return done ? { done } : { error: "Nothing was changed. Refresh the queue and try again.", done }
 }
 
 export async function sanction(input: {
