@@ -1565,6 +1565,12 @@ export type Database = {
         }
         Returns: undefined
       }
+      resubmit_expert_application: {
+        Args: {
+          data: Json
+        }
+        Returns: string
+      }
       reveal_member_pii: {
         Args: {
           member: string

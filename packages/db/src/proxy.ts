@@ -45,5 +45,12 @@ export function withSession(target: NextResponse, session: { response: NextRespo
 
 /** Only same site paths, so a crafted `next` cannot send her to another site after sign in. */
 export function safeNext(next: string | null | undefined, fallback = "/") {
-  return next && next.startsWith("/") && !next.startsWith("//") && !next.startsWith("/\\") ? next : fallback
+  // Control characters (tab, newline) are stripped by URL parsers, which turns "/\t/evil.com" into "//evil.com"
+  if (!next || !next.startsWith("/") || /[\u0000-\u001f\u007f\\]/.test(next)) return fallback
+  try {
+    const url = new URL(next, "http://same.site")
+    return url.origin === "http://same.site" ? url.pathname + url.search + url.hash : fallback
+  } catch {
+    return fallback
+  }
 }

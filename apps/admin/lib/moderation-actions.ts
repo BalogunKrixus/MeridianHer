@@ -45,8 +45,8 @@ export async function decide(
   let done = 0
   for (const item of items.slice(0, 100)) {
     if (!kind.safeParse(item.type).success || !id.safeParse(item.id).success) continue
-    // Profiles have no content to approve: approving a profile report dismisses it
-    const effective = item.type === "profile" && action !== "hide" ? "dismiss" : action
+    // Profiles have no content to approve or hide: deciding a profile report dismisses it
+    const effective = item.type === "profile" ? "dismiss" : action
     const { error } = await supabase.rpc("moderate", {
       kind: item.type,
       target: item.id,

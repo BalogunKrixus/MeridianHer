@@ -149,10 +149,13 @@ const SETTING_KEYS = [
   "report_auto_hide_threshold",
 ] as const
 
+// Letters, numbers, spaces and apostrophes only: these lists are matched as patterns in the database
+const WORDS = /^[\p{L}\p{N}' ]+$/u
+
 const settingValue: Record<(typeof SETTING_KEYS)[number], z.ZodType> = {
-  blocked_words: z.array(z.string().trim().min(2).max(60)).max(1000),
+  blocked_words: z.array(z.string().trim().min(2).max(60).regex(WORDS)).max(1000),
   allowed_link_domains: z.array(z.string().trim().toLowerCase().regex(/^[a-z0-9.-]+\.[a-z]{2,}$/)).max(500),
-  crisis_keywords: z.array(z.string().trim().min(3).max(80)).max(500),
+  crisis_keywords: z.array(z.string().trim().min(3).max(80).regex(WORDS)).max(500),
   crisis_resources: z
     .array(
       z.object({
@@ -177,7 +180,16 @@ export async function saveSetting(key: (typeof SETTING_KEYS)[number], value: unk
   await requireAdmin()
   if (!SETTING_KEYS.includes(key)) return { error: "Unknown setting." }
   const parsed = settingValue[key].safeParse(value)
-  if (!parsed.success) return { error: "Check the values. Something is not in the expected format." }
+  if (!parsed.success) {
+    return {
+      error:
+        key === "blocked_words" || key === "crisis_keywords"
+          ? "Use letters, numbers, spaces and apostrophes only, one word or phrase per line."
+          : key === "allowed_link_domains"
+            ? "Write each domain on its own line, like nhs.uk, without https or slashes."
+            : "Check the values. Something is not in the expected format.",
+    }
+  }
   const supabase = await createClient()
   const { data: existing } = await supabase.from("settings").select("id").eq("key", key).maybeSingle()
   const { error } = existing

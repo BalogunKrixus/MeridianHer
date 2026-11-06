@@ -102,6 +102,14 @@ function ReasonDialog({ pending, onClose, onDone }: { pending: Pending | null; o
           error = result.error
           break
         }
+        // Content left up: close its reports so the item leaves the queue for everyone
+        if (!(hideToo && i.targetType !== "profile")) {
+          const closed = await decide([{ type: i.targetType, id: i.targetId }], "dismiss")
+          if (closed.error) {
+            error = closed.error
+            break
+          }
+        }
       }
     }
     setBusy(false)

@@ -27,21 +27,42 @@ import { prepareDocumentUpload, submitApplication, type ApplicationInput } from 
 
 type Doc = { name: string; path: string }
 
+type Initial = {
+  legal_name?: string
+  title?: string
+  category?: string
+  category_other?: string
+  specialties?: string[]
+  licensing_body?: string
+  licence_number?: string
+  country?: string
+  years_in_practice?: number
+  workplace?: string
+  profile_url?: string
+  bio?: string
+  document_paths?: string[]
+}
+
 export function ApplyForm({
   invite,
+  resubmit = false,
   initial,
   categories,
 }: {
   invite?: string
-  initial?: { legal_name?: string; category?: string }
+  /** Answering a request for more information: updates the same application */
+  resubmit?: boolean
+  initial?: Initial
   categories: { value: string; label: string }[]
 }) {
   const router = useRouter()
   const [category, setCategory] = React.useState(initial?.category ?? "")
-  const [specialties, setSpecialties] = React.useState<string[]>([])
+  const [specialties, setSpecialties] = React.useState<string[]>(initial?.specialties ?? [])
   const [specialty, setSpecialty] = React.useState("")
-  const [bio, setBio] = React.useState("")
-  const [docs, setDocs] = React.useState<Doc[]>([])
+  const [bio, setBio] = React.useState(initial?.bio ?? "")
+  const [docs, setDocs] = React.useState<Doc[]>(
+    (initial?.document_paths ?? []).map((path, i) => ({ name: `Document ${i + 1}, already sent`, path }))
+  )
   const [uploading, setUploading] = React.useState(false)
   const [consent, setConsent] = React.useState(false)
   const [pending, setPending] = React.useState(false)
@@ -98,13 +119,13 @@ export function ApplyForm({
           consent: consent as true,
         }
         setPending(true)
-        const result = await submitApplication(input, invite)
+        const result = await submitApplication(input, invite, resubmit)
         setPending(false)
         if (result.error) {
           setError(result.error)
           return
         }
-        toast.success("Application sent. Thank you.")
+        toast.success(resubmit ? "Thank you. We will look at your update." : "Application sent. Thank you.")
         router.refresh()
       }}
     >
@@ -118,7 +139,7 @@ export function ApplyForm({
           </Field>
           <Field>
             <FieldLabel htmlFor="title">Professional title</FieldLabel>
-            <Input id="title" name="title" required placeholder="Consultant gynaecologist" />
+            <Input id="title" name="title" defaultValue={initial?.title} required placeholder="Consultant gynaecologist" />
           </Field>
           <Field>
             <FieldLabel htmlFor="category">Category</FieldLabel>
@@ -137,12 +158,12 @@ export function ApplyForm({
           </Field>
           <Field>
             <FieldLabel htmlFor="years_in_practice">Years in practice</FieldLabel>
-            <Input id="years_in_practice" name="years_in_practice" type="number" inputMode="numeric" min={0} max={70} required />
+            <Input id="years_in_practice" name="years_in_practice" defaultValue={initial?.years_in_practice} type="number" inputMode="numeric" min={0} max={70} required />
           </Field>
           {category === "other" ? (
             <Field className="sm:col-span-2">
               <FieldLabel htmlFor="category_other">Your field</FieldLabel>
-              <Input id="category_other" name="category_other" required maxLength={60} />
+              <Input id="category_other" name="category_other" defaultValue={initial?.category_other} required maxLength={60} />
             </Field>
           ) : null}
         </FieldGroup>
@@ -184,26 +205,26 @@ export function ApplyForm({
         <FieldGroup className="grid gap-4 sm:grid-cols-2">
           <Field>
             <FieldLabel htmlFor="licensing_body">Licensing body</FieldLabel>
-            <Input id="licensing_body" name="licensing_body" required placeholder="MDCN, NMCN, GMC, NMC or HCPC" />
+            <Input id="licensing_body" name="licensing_body" defaultValue={initial?.licensing_body} required placeholder="MDCN, NMCN, GMC, NMC or HCPC" />
           </Field>
           <Field>
             <FieldLabel htmlFor="licence_number">Licence or registration number</FieldLabel>
-            <Input id="licence_number" name="licence_number" required autoComplete="off" />
+            <Input id="licence_number" name="licence_number" defaultValue={initial?.licence_number} required autoComplete="off" />
           </Field>
           <Field>
             <FieldLabel htmlFor="country">Country of practice</FieldLabel>
-            <Input id="country" name="country" required defaultValue="Nigeria" autoComplete="country-name" />
+            <Input id="country" name="country" required defaultValue={initial?.country ?? "Nigeria"} autoComplete="country-name" />
           </Field>
           <Field>
             <FieldLabel htmlFor="workplace">
               Workplace <span className="font-normal text-muted-foreground">(optional)</span>
             </FieldLabel>
-            <Input id="workplace" name="workplace" autoComplete="organization" />
+            <Input id="workplace" name="workplace" defaultValue={initial?.workplace} autoComplete="organization" />
           </Field>
         </FieldGroup>
         <Field>
           <FieldLabel htmlFor="profile_url">LinkedIn or practice web page</FieldLabel>
-          <Input id="profile_url" name="profile_url" type="url" required placeholder="https://" inputMode="url" />
+          <Input id="profile_url" name="profile_url" defaultValue={initial?.profile_url} type="url" required placeholder="https://" inputMode="url" />
         </Field>
         <Field>
           <FieldLabel>Licence or ID</FieldLabel>
@@ -282,7 +303,7 @@ export function ApplyForm({
       ) : null}
       <Button type="submit" size="lg" disabled={pending || uploading || !consent} className="self-start">
         {pending ? <Spinner data-icon="inline-start" /> : null}
-        Send application
+        {resubmit ? "Send my update" : "Send application"}
       </Button>
     </form>
   )

@@ -32,7 +32,7 @@ export default async function ApplyPage({ searchParams }: PageProps<"/experts/ap
   const [{ data: latest }, inviteDetails] = await Promise.all([
     supabase
       .from("expert_applications")
-      .select("status, decision_reason, created_at")
+      .select("status, decision_reason, created_at, legal_name, title, category, category_other, specialties, licensing_body, licence_number, country, years_in_practice, workplace, profile_url, bio, document_paths")
       .eq("user_id", viewer.user_id)
       .order("created_at", { ascending: false })
       .limit(1)
@@ -75,7 +75,7 @@ export default async function ApplyPage({ searchParams }: PageProps<"/experts/ap
           <ClockIcon aria-hidden />
           <AlertTitle>{latest.status === "in_review" ? "We are checking your details" : "Thank you, your application is with us"}</AlertTitle>
           <AlertDescription>
-            We check every licence by hand against the public register. You will get a notification and an email as soon as we
+            We check every licence by hand against the public register. You will get a notification here as soon as we
             have decided, usually within five working days.
           </AlertDescription>
         </Alert>
@@ -129,7 +129,14 @@ export default async function ApplyPage({ searchParams }: PageProps<"/experts/ap
         <CardContent>
           <ApplyForm
             invite={invite}
-            initial={inviteDetails ? { legal_name: inviteDetails.name, category: inviteDetails.category } : undefined}
+            resubmit={latest?.status === "more_info"}
+            initial={
+              latest?.status === "more_info"
+                ? { ...latest, workplace: latest.workplace ?? undefined, category_other: latest.category_other ?? undefined }
+                : inviteDetails
+                  ? { legal_name: inviteDetails.name, category: inviteDetails.category }
+                  : undefined
+            }
             categories={Object.entries(EXPERT_CATEGORY_LABELS).map(([value, label]) => ({ value, label }))}
           />
         </CardContent>

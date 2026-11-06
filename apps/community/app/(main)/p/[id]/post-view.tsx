@@ -82,7 +82,7 @@ type Post = {
   askExpert: boolean
 }
 
-type Reply = ReplyData & { bodyJson?: JSONContent | null; replies?: Reply[] }
+type Reply = ReplyData & { bodyJson?: JSONContent | null; replies?: Reply[]; replyAs?: string }
 
 function findReply(thread: Reply[], id: string): Reply | undefined {
   for (const r of thread) {
@@ -467,10 +467,12 @@ export function PostView({
               onCancelReplyTo={() => setReplyTo(null)}
               disabledReason={post.locked ? "Replies are closed on this post." : undefined}
               onSubmit={async (doc) => {
-                const result = await createReply(post.id, replyTo, doc)
+                const parent = replyTo ? (findReply(thread, replyTo)?.replyAs ?? replyTo) : null
+                const result = await createReply(post.id, parent, doc)
                 if (result.error) return result
                 setReplyTo(null)
                 if (await needsCrisisHelp(plainText(doc))) setCrisisOpen(true)
+                else if (result.held) toast("Thanks. Your reply is being checked and will appear soon.")
                 else toast("Reply posted")
                 return result
               }}

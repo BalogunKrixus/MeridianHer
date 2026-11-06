@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { redirect } from "next/navigation"
 import { SearchIcon } from "lucide-react"
 import { Badge } from "@meridianher/ui/components/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@meridianher/ui/components/card"
@@ -21,6 +22,11 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
   const supabase = await createClient()
   const like = `%${q.replace(/[%_,()]/g, " ")}%`
   const isId = /^[0-9a-f-]{36}$/i.test(q)
+  if (isId) {
+    // A pasted member id jumps straight to that member
+    const { data: member } = await supabase.from("profiles").select("user_id").eq("user_id", q).maybeSingle()
+    if (member) redirect(`/members/${member.user_id}`)
+  }
 
   const [members, posts, experts] = q
     ? await Promise.all([

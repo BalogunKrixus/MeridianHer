@@ -76,19 +76,21 @@ export async function createPost(input: z.input<typeof postInput>): Promise<{ id
   return { id: data.id }
 }
 
-export async function createReply(postId: string, parentReplyId: string | null, rawBody: unknown): Promise<Result> {
+export async function createReply(postId: string, parentReplyId: string | null, rawBody: unknown): Promise<Result & { held?: boolean }> {
   const viewer = await member()
   if (!viewer) return SIGN_IN
   const body = sanitizeRichText(rawBody)
   if (!body) return { error: "Write something before you post your reply." }
   if (plainText(body).length > 5000) return { error: "Keep your reply under 5,000 characters." }
   const supabase = await createClient()
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("replies")
     .insert({ author_id: viewer.user_id, post_id: postId, parent_reply_id: parentReplyId, body })
+    .select("status")
+    .single()
   if (error) return { error: friendly(error, "We could not post your reply. Please try again.") }
   revalidatePath(`/p/${postId}`)
-  return {}
+  return { held: data.status === "held" }
 }
 
 const target = z.object({ type: z.enum(["post", "reply"]), id: z.uuid() })

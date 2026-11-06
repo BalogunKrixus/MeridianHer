@@ -25,6 +25,8 @@ const ICONS: Record<string, typeof BellIcon> = {
 function hrefFor(kind: string, payload: Record<string, unknown>) {
   if (kind === "expert_application") return payload.status === "approved" ? "/experts/inbox" : "/experts/apply"
   if (typeof payload.post_id === "string") return `/p/${payload.post_id}${typeof payload.reply_id === "string" ? `#reply-${payload.reply_id}` : ""}`
+  // Warnings, mutes and bans: where she can read the reason and appeal
+  if (kind === "moderation") return "/settings#standing"
   return "/guidelines"
 }
 

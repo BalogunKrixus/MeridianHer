@@ -141,7 +141,7 @@ export default async function PostPage({ params, searchParams }: PageProps<"/p/[
     saved: saved.has(r.id!),
   }))
 
-  type Reply = ReplyData & { bodyJson: JSONContent | null; replies: Reply[] }
+  type Reply = ReplyData & { bodyJson: JSONContent | null; replies: Reply[]; replyAs?: string }
   const toReply = (r: (typeof replies)[number]): Reply => ({
     id: r.id!,
     author: { displayName: r.author_name ?? "", asTeam: !!r.as_team, tone: post.space_tone as SpaceTone },
@@ -171,10 +171,11 @@ export default async function PostPage({ params, searchParams }: PageProps<"/p/[
     if (parent) parent.replies!.push(item)
     else if (!pinned.has(item.id)) thread.push(item)
   }
-  // Replies to a pinned expert answer stay in the thread, under a note
+  // Replies to a pinned expert answer stay in the thread
   for (const a of expertAnswers) {
     const answer = byId.get(a.id)!
-    if (answer.replies?.length) thread.push(...answer.replies)
+    // Threads are two levels deep, so answering one of these replies joins it under the expert answer
+    for (const r of answer.replies) thread.push({ ...(r as Reply), replyAs: a.id })
   }
   const visibleReplies = replies.filter((r) => !r.removed).length
   const relatedPosts = (related.data ?? []).map((r) => toPostCard(r, saved))

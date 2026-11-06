@@ -126,6 +126,8 @@ function Composer({
   }, [draftKey, defaultSpace])
 
   const latest = React.useRef<ComposerValues | null>(null)
+  // Once posted, the draft must not be saved again while the page navigates away
+  const sent = React.useRef(false)
   latest.current = {
     type,
     space,
@@ -140,7 +142,7 @@ function Composer({
     if (!draftKey) return
     const id = window.setInterval(() => {
       const d = latest.current
-      if (!d || (!d.title.trim() && !d.body)) return
+      if (sent.current || !d || (!d.title.trim() && !d.body)) return
       try {
         window.localStorage.setItem(draftKey, JSON.stringify(d))
       } catch {
@@ -186,6 +188,7 @@ function Composer({
       setFormError(result.error)
       return
     }
+    sent.current = true
     if (draftKey) {
       try {
         window.localStorage.removeItem(draftKey)

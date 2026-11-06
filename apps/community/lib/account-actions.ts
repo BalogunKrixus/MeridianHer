@@ -77,6 +77,7 @@ export async function deleteAccount(removeContent: boolean, confirmation: string
   const viewer = await member()
   if (!viewer) return SIGN_IN
   if (confirmation.trim().toLowerCase() !== "delete") return { error: "Type delete to confirm." }
+  if (viewer.status === "banned") return { error: "This account is banned, so it cannot be deleted here. Please contact us and we will help." }
   const supabase = await createClient()
   const { error } = await supabase.rpc("prepare_account_deletion", { remove_content: removeContent })
   if (error) return { error: "We could not delete your account. Please try again." }
@@ -105,7 +106,7 @@ const application = z.object({
 
 export type ApplicationInput = z.input<typeof application>
 
-export async function submitApplication(input: ApplicationInput, inviteToken?: string): Promise<Result> {
+export async function submitApplication(input: ApplicationInput, inviteToken?: string, resubmit = false): Promise<Result> {
   const viewer = await member()
   if (!viewer) return SIGN_IN
   const parsed = application.safeParse(input)
@@ -126,7 +127,9 @@ export async function submitApplication(input: ApplicationInput, inviteToken?: s
   // Uploaded documents must sit in her own folder
   if (data.document_paths.some((p) => !p.startsWith(`${viewer.user_id}/`))) return { error: "Please upload your document again." }
   const supabase = await createClient()
-  const { error } = await supabase.rpc("submit_expert_application", { data, invite_token: inviteToken })
+  const { error } = resubmit
+    ? await supabase.rpc("resubmit_expert_application", { data })
+    : await supabase.rpc("submit_expert_application", { data, invite_token: inviteToken })
   if (error) {
     return {
       error:
@@ -168,4 +171,17 @@ export async function prepareDocumentUpload(type: string, size: number): Promise
   const { data, error } = await supabase.storage.from("expert-documents").createSignedUploadUrl(path)
   if (error || !data) return { error: "We could not prepare the upload. Please try again." }
   return { path, url: data.signedUrl }
+}
+
+/** A member may appeal each warning, mute or ban once (PRD section 8). */
+export async function appealSanction(sanctionId: string, message: string): Promise<Result> {
+  const viewer = await getViewer()
+  if (!viewer) return SIGN_IN
+  const text = message.trim()
+  if (text.length < 10) return { error: "Tell us a little more, in at least a sentence." }
+  const supabase = await createClient()
+  const { error } = await supabase.rpc("appeal_sanction", { sanction: sanctionId, message: text.slice(0, 2000) })
+  if (error) return { error: "This decision has already been appealed, or it no longer exists." }
+  revalidatePath("/settings")
+  return {}
 }

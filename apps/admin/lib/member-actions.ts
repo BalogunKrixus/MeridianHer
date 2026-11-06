@@ -54,14 +54,19 @@ export async function deleteMember(member: string, removeContent: boolean, reaso
   if (!id.safeParse(member).success || member === staff.user_id) return { error: "You cannot delete this account here." }
   if (reason.trim().length < 5) return { error: "Record why the account is being deleted." }
   const supabase = await createClient()
+  // The ban records the deletion and enforces who may act on whom, before anything is removed
+  const { error } = await supabase.rpc("sanction_member", { member, kind: "ban", reason: `Account deleted on request: ${reason.trim()}` })
+  if (error) {
+    return {
+      error: error.message === "cannot_sanction_staff" ? "Only a super admin can delete a team member's account." : "We could not record the deletion.",
+    }
+  }
   if (removeContent) {
     const admin = createSecretClient()
     const now = new Date().toISOString()
     await admin.from("posts").update({ deleted_at: now, deleted_by: staff.user_id, delete_reason: "Account deleted" }).eq("author_id", member).is("deleted_at", null)
     await admin.from("replies").update({ deleted_at: now, deleted_by: staff.user_id, delete_reason: "Account deleted" }).eq("author_id", member).is("deleted_at", null)
   }
-  const { error } = await supabase.rpc("sanction_member", { member, kind: "ban", reason: `Account deleted: ${reason.trim()}` })
-  if (error && error.message !== "not_found") return { error: "We could not record the deletion." }
   const { error: deleteError } = await createSecretClient().auth.admin.deleteUser(member)
   if (deleteError) return { error: "The account could not be deleted. Check that SUPABASE_SECRET_KEY is set for the admin app." }
   revalidatePath("/members")

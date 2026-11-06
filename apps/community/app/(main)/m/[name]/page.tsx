@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { notFound, redirect } from "next/navigation"
+import { notFound } from "next/navigation"
 import { EyeOffIcon, MessageCircleQuestionIcon, SettingsIcon } from "lucide-react"
 import { Alert, AlertDescription } from "@meridianher/ui/components/alert"
 import { ButtonLink } from "@meridianher/ui/components/button"
@@ -29,10 +29,6 @@ export default async function MemberPage({ params }: PageProps<"/m/[name]">) {
   const profile = await loadProfile((await params).name)
   if (!profile?.user_id) notFound()
   const supabase = await createClient()
-  if (profile.is_expert) {
-    const { data: expert } = await supabase.from("public_experts").select("handle").eq("user_id", profile.user_id).maybeSingle()
-    if (expert?.handle) redirect(`/e/${expert.handle}`)
-  }
   const viewer = await getViewer()
   const isMe = viewer?.user_id === profile.user_id
 

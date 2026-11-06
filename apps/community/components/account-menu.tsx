@@ -17,6 +17,7 @@ import {
 import { InitialAvatar } from "@meridianher/ui/patterns/chips"
 
 import { signOut } from "@/lib/auth-actions"
+import { clearDrafts } from "@/lib/drafts"
 
 export function AccountMenu({ name, isExpert }: { name: string; isExpert: boolean }) {
   const { theme, setTheme } = useTheme()
@@ -59,7 +60,10 @@ export function AccountMenu({ name, isExpert }: { name: string; isExpert: boolea
           </DropdownMenuRadioGroup>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => signOut()}>
+        <DropdownMenuItem onClick={() => {
+          clearDrafts()
+          void signOut()
+        }}>
           <LogOutIcon /> Sign out
         </DropdownMenuItem>
       </DropdownMenuContent>

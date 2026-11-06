@@ -47,6 +47,18 @@ describe("automated checks", () => {
     expect((await flags(held.id)).map((f) => f.source)).toContain("link")
   })
 
+  it("holds links hidden inside rich text marks", async () => {
+    const a = await db.createUser()
+    const spaceId = await db.spaceId("periods")
+    const body = JSON.stringify({ type: "doc", content: [{ type: "paragraph", content: [
+      { type: "text", text: "Try this clinic", marks: [{ type: "link", attrs: { href: "https://scam-pills.example/buy" } }] },
+    ] }] })
+    const { rows } = await db.as(a, (q) => q.query<{ status: string }>(
+      "insert into public.posts (author_id, space_id, title, body) values ($1, $2, 'A question about my cycle this month', $3) returning status",
+      [a, spaceId, body]))
+    expect(rows[0].status).toBe("held")
+  })
+
   it("publishes posts with crisis words but raises an urgent flag", async () => {
     const a = await db.createUser()
     const p = await postWith(a, "some days I want to die")
@@ -227,7 +239,7 @@ describe("staff tools", () => {
     const data = {
       legal_name: "Ada Test", title: "Consultant gynaecologist", category: "gynaecologist", specialties: ["PCOS"],
       licensing_body: "MDCN", licence_number: "123", country: "Nigeria", years_in_practice: 10,
-      profile_url: "https://example.com/dr", bio: "Ten years in practice.",
+      profile_url: "https://example.com/dr", bio: "Ten years in practice.", document_paths: [`${applicant}/licence.pdf`],
     }
     const { rows: a } = await db.as(applicant, (q) => q.query<{ id: string }>("select public.submit_expert_application($1, $2) as id", [JSON.stringify(data), token]))
     await db.as(admin, (q) => q.query("select public.review_application($1, 'approved', null, 'dr-test', 'Dr Ada Test')", [a[0].id]))
@@ -249,5 +261,47 @@ describe("staff tools", () => {
     expect(rows[0].o.headline.members).toBeGreaterThan(0)
     expect(await db.as(mod, (q) => failure(q, "select public.admin_analytics()"))).toMatch(/admin_only/)
     await db.as(admin, (q) => q.query("select public.admin_analytics()"))
+  })
+
+  it("a mute never downgrades a ban, and overturning a mute keeps a later ban", async () => {
+    const m = await db.createUser()
+    const mod = await db.createUser({ role: "moderator" })
+    await db.as(mod, (q) => q.query("select public.sanction_member($1, 'mute', 3, 'Rule 1')", [m]))
+    const { rows: s } = await db.pg.query<{ id: string }>("select id from public.member_sanctions where user_id = $1 and kind = 'mute'", [m])
+    await db.as(m, (q) => q.query("select public.appeal_sanction($1, 'I did not mean it')", [s[0].id]))
+    await db.as(mod, (q) => q.query("select public.sanction_member($1, 'ban', null, 'Rule 5')", [m]))
+    await db.as(mod, (q) => q.query("select public.sanction_member($1, 'mute', 1, 'Rule 1')", [m]))
+    const status = async () => (await db.pg.query<{ status: string }>("select status from public.profiles where user_id = $1", [m])).rows[0].status
+    expect(await status()).toBe("banned")
+    await db.as(mod, (q) => q.query("select public.decide_appeal($1, true, 'Fair point')", [s[0].id]))
+    expect(await status()).toBe("banned")
+  })
+
+  it("an applicant answers a request for more information on the same application", async () => {
+    const applicant = await db.createUser()
+    const admin = await db.createUser({ role: "admin" })
+    const data = {
+      legal_name: "Bola Test", title: "Midwife", category: "midwife", specialties: ["Labour"],
+      licensing_body: "NMCN", licence_number: "456", country: "Nigeria", years_in_practice: 4,
+      profile_url: "https://example.com/bola", bio: "Four years on a labour ward.", document_paths: [`${applicant}/id.png`],
+    }
+    const stolen = { ...data, document_paths: [`${admin}/licence.pdf`] }
+    expect(await db.as(applicant, (q) => failure(q, "select public.submit_expert_application($1)", [JSON.stringify(stolen)]))).toMatch(/not_your_document/)
+    const { rows: a } = await db.as(applicant, (q) => q.query<{ id: string }>("select public.submit_expert_application($1) as id", [JSON.stringify(data)]))
+    await db.as(admin, (q) => q.query("select public.review_application($1, 'more_info', 'Please send a clearer photo')", [a[0].id]))
+    await db.as(applicant, (q) => q.query("select public.resubmit_expert_application($1)", [JSON.stringify({ ...data, document_paths: [`${applicant}/id-2.png`] })]))
+    const { rows } = await db.pg.query<{ status: string; document_paths: string[] }>("select status, document_paths from public.expert_applications where id = $1", [a[0].id])
+    expect(rows[0]).toEqual({ status: "submitted", document_paths: [`${applicant}/id-2.png`] })
+  })
+
+  it("her replies on her own anonymous post show as Anonymous member", async () => {
+    const author = await db.createUser()
+    const spaceId = await db.spaceId("periods")
+    const { rows: p } = await db.as(author, (q) => q.query<{ id: string }>(
+      "insert into public.posts (author_id, space_id, title, fully_anonymous) values ($1, $2, 'A private question about my health', true) returning id", [author, spaceId]))
+    await db.as(author, (q) => q.query("insert into public.replies (author_id, post_id, body) values ($1, $2, $3)", [author, p[0].id, doc("Update: all fine")]))
+    const { rows } = await db.as(null, (q) => q.query<{ author_name: string; author_user_id: string | null }>(
+      "select author_name, author_user_id from public.thread_replies where post_id = $1", [p[0].id]))
+    expect(rows).toEqual([{ author_name: "Anonymous member", author_user_id: null }])
   })
 })

@@ -84,7 +84,7 @@ export function MemberActions({ member, isAdmin, isSuperAdmin, isMe }: { member:
         {!canSanction ? <CardDescription>{isMe ? "This is your own account." : "Only a super admin can sanction team members."}</CardDescription> : null}
       </CardHeader>
       <CardContent className="flex flex-col gap-2">
-        {member.status === "active" ? (
+        {member.status !== "banned" ? (
           <div className="grid grid-cols-3 gap-2">
             <Button variant="outline" size="sm" disabled={!canSanction} onClick={() => open("warn")}>
               <TriangleAlertIcon data-icon="inline-start" aria-hidden />
@@ -92,14 +92,15 @@ export function MemberActions({ member, isAdmin, isSuperAdmin, isMe }: { member:
             </Button>
             <Button variant="outline" size="sm" disabled={!canSanction} onClick={() => open("mute")}>
               <TimerIcon data-icon="inline-start" aria-hidden />
-              Mute
+              {member.status === "muted" ? "Mute again" : "Mute"}
             </Button>
             <Button variant="destructive" size="sm" disabled={!canSanction} onClick={() => open("ban")}>
               <BanIcon data-icon="inline-start" aria-hidden />
               Ban
             </Button>
           </div>
-        ) : (
+        ) : null}
+        {member.status !== "active" ? (
           <Button
             variant="outline"
             size="sm"
@@ -114,7 +115,7 @@ export function MemberActions({ member, isAdmin, isSuperAdmin, isMe }: { member:
             <UndoIcon data-icon="inline-start" aria-hidden />
             {member.status === "muted" ? "Lift mute" : "Lift ban"}
           </Button>
-        )}
+        ) : null}
 
         {isAdmin ? (
           <>

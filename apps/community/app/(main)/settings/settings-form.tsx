@@ -1,13 +1,13 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import { DownloadIcon, ExternalLinkIcon, LogOutIcon } from "lucide-react"
 import { Button, ButtonLink } from "@meridianher/ui/components/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@meridianher/ui/components/card"
 import { Checkbox } from "@meridianher/ui/components/checkbox"
 import { Field, FieldContent, FieldDescription, FieldError, FieldLabel } from "@meridianher/ui/components/field"
 import { Input } from "@meridianher/ui/components/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@meridianher/ui/components/select"
 import { toast } from "@meridianher/ui/components/sonner"
 import { Switch } from "@meridianher/ui/components/switch"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@meridianher/ui/components/table"
@@ -15,6 +15,7 @@ import { Textarea } from "@meridianher/ui/components/textarea"
 
 import { ConfirmDelete } from "@/components/confirm-delete"
 import {
+  appealSanction,
   changeDisplayName,
   deleteAccount,
   setHideActivity,
@@ -22,16 +23,11 @@ import {
   updateExpertProfile,
 } from "@/lib/account-actions"
 import { signOut } from "@/lib/auth-actions"
+import { clearDrafts } from "@/lib/drafts"
 import type { NotificationKind } from "@/lib/format"
 
 type Email = "off" | "immediate" | "digest"
 type Pref = { kind: NotificationKind; label: string; locked?: boolean; inApp: boolean; email: Email }
-
-const EMAIL_OPTIONS: { value: Email; label: string }[] = [
-  { value: "immediate", label: "Straight away" },
-  { value: "digest", label: "Daily summary" },
-  { value: "off", label: "Off" },
-]
 
 function NameSection({ current, nextChange }: { current: string; nextChange: string | null }) {
   const [name, setName] = React.useState(current)
@@ -122,7 +118,7 @@ function PrivacySection({ hideActivity }: { hideActivity: boolean }) {
 
 function NotificationsSection({ prefs }: { prefs: Pref[] }) {
   const [rows, setRows] = React.useState(prefs)
-  async function update(kind: NotificationKind, change: Partial<Pick<Pref, "inApp" | "email">>) {
+  async function update(kind: NotificationKind, change: Partial<Pick<Pref, "inApp">>) {
     const before = rows
     const next = rows.map((r) => (r.kind === kind ? { ...r, ...change } : r))
     setRows(next)
@@ -139,17 +135,14 @@ function NotificationsSection({ prefs }: { prefs: Pref[] }) {
         <CardTitle render={<h2 />} id="settings-notifications" className="text-h3">
           Notifications
         </CardTitle>
-        <CardDescription>
-          Emails never include what anyone wrote, only that something new is waiting for you.
-        </CardDescription>
+        <CardDescription>Choose what shows up in your notifications.</CardDescription>
       </CardHeader>
       <CardContent>
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Tell me when</TableHead>
-              <TableHead className="w-20 text-center">In app</TableHead>
-              <TableHead className="w-40">Email</TableHead>
+              <TableHead className="w-20 text-center">Notify me</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -158,29 +151,11 @@ function NotificationsSection({ prefs }: { prefs: Pref[] }) {
                 <TableCell className="whitespace-normal">{r.label}</TableCell>
                 <TableCell className="text-center">
                   <Switch
-                    aria-label={`${r.label}, in app`}
+                    aria-label={r.label}
                     checked={r.inApp}
                     disabled={r.locked}
                     onCheckedChange={(inApp) => update(r.kind, { inApp })}
                   />
-                </TableCell>
-                <TableCell>
-                  <Select
-                    items={EMAIL_OPTIONS}
-                    value={r.email}
-                    onValueChange={(v) => v && update(r.kind, { email: v as Email })}
-                  >
-                    <SelectTrigger size="sm" className="w-full" aria-label={`${r.label}, email`}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {EMAIL_OPTIONS.map((o) => (
-                        <SelectItem key={o.value} value={o.value}>
-                          {o.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                 </TableCell>
               </TableRow>
             ))}
@@ -258,7 +233,10 @@ function DataSection() {
           <DownloadIcon data-icon="inline-start" aria-hidden />
           Download my data
         </ButtonLink>
-        <Button variant="outline" onClick={() => signOut()}>
+        <Button variant="outline" onClick={() => {
+          clearDrafts()
+          void signOut()
+        }}>
           <LogOutIcon data-icon="inline-start" aria-hidden />
           Sign out
         </Button>
@@ -273,6 +251,7 @@ function DataSection() {
         description="Your account, saved list and settings are deleted straight away. This cannot be undone."
         confirmLabel="Delete my account"
         onConfirm={async () => {
+          clearDrafts()
           const result = await deleteAccount(removeContent, confirmation)
           if (result?.error) setError(result.error)
         }}
@@ -296,7 +275,100 @@ function DataSection() {
   )
 }
 
+type Sanction = { id: string; kind: "warn" | "mute" | "ban"; reason: string; until: string | null; appealStatus: string | null; at: string }
+
+const SANCTION_LABEL = { warn: "Warning", mute: "Mute", ban: "Ban" } as const
+
+/** Her moderation history, with one appeal per decision (PRD section 8). */
+function StandingSection({ sanctions, status }: { sanctions: Sanction[]; status: string }) {
+  const router = useRouter()
+  const [open, setOpen] = React.useState<string | null>(null)
+  const [message, setMessage] = React.useState("")
+  const [error, setError] = React.useState<string>()
+  const [pending, setPending] = React.useState(false)
+  return (
+    <Card render={<section id="standing" aria-labelledby="settings-standing" />} className="scroll-mt-20">
+      <CardHeader>
+        <CardTitle render={<h2 />} id="settings-standing" className="text-h3">
+          Account standing
+        </CardTitle>
+        <CardDescription>
+          {status === "active"
+            ? "Your account is in good standing."
+            : status === "muted"
+              ? "Your account is muted for now. You can read everything, and posting comes back when the mute ends."
+              : "Your account is banned."}{" "}
+          If you think a decision was wrong, you can appeal it once and a different moderator will look at it.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ul className="flex flex-col divide-y">
+          {sanctions.map((s) => (
+            <li key={s.id} className="flex flex-col gap-2 py-3 first:pt-0">
+              <p className="text-small">
+                <span className="font-medium">{SANCTION_LABEL[s.kind]}</span>
+                <span className="text-muted-foreground"> · {s.at}</span>
+              </p>
+              <p className="text-body">{s.reason}</p>
+              {s.appealStatus === "pending" ? (
+                <p className="text-small text-muted-foreground">Appeal sent. We will let you know the outcome.</p>
+              ) : s.appealStatus === "overturned" ? (
+                <p className="text-small text-success">Appeal accepted. This decision was reversed.</p>
+              ) : s.appealStatus === "upheld" ? (
+                <p className="text-small text-muted-foreground">Appeal reviewed. The decision stands.</p>
+              ) : open === s.id ? (
+                <form
+                  className="flex flex-col gap-2"
+                  onSubmit={async (e) => {
+                    e.preventDefault()
+                    setPending(true)
+                    const result = await appealSanction(s.id, message)
+                    setPending(false)
+                    if (result.error) return setError(result.error)
+                    setOpen(null)
+                    setMessage("")
+                    toast.success("Appeal sent")
+                    router.refresh()
+                  }}
+                >
+                  <Field data-invalid={!!error}>
+                    <FieldLabel htmlFor={`appeal-${s.id}`}>Why should we look again?</FieldLabel>
+                    <Textarea id={`appeal-${s.id}`} rows={3} maxLength={2000} value={message} onChange={(e) => setMessage(e.target.value)} />
+                    {error ? <FieldError>{error}</FieldError> : null}
+                  </Field>
+                  <div className="flex gap-2">
+                    <Button type="submit" size="sm" disabled={pending || message.trim().length < 10}>
+                      Send appeal
+                    </Button>
+                    <Button type="button" size="sm" variant="ghost" onClick={() => setOpen(null)}>
+                      Cancel
+                    </Button>
+                  </div>
+                </form>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="self-start"
+                  onClick={() => {
+                    setError(undefined)
+                    setOpen(s.id)
+                  }}
+                >
+                  Appeal this decision
+                </Button>
+              )}
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
+  )
+}
+
 export function SettingsForm({
+  sanctions,
+  status,
   displayName,
   nextNameChange,
   hideActivity,
@@ -308,9 +380,12 @@ export function SettingsForm({
   hideActivity: boolean
   prefs: Pref[]
   expert: { handle: string; bio: string; available: boolean; renewalDue: string } | null
+  sanctions: Sanction[]
+  status: string
 }) {
   return (
     <>
+      {sanctions.length || status !== "active" ? <StandingSection sanctions={sanctions} status={status} /> : null}
       <NameSection current={displayName} nextChange={nextNameChange} />
       {expert ? <ExpertSection expert={expert} /> : null}
       <PrivacySection hideActivity={hideActivity} />
