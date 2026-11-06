@@ -3,7 +3,8 @@ import { createPublicClient } from "@meridianher/db/public"
 
 const site = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
 
-export const revalidate = 3600
+// Built on request, so the build never needs the database
+export const dynamic = "force-dynamic"
 
 /** Public questions, spaces and experts, as a visitor sees them. Posts behind content warnings are left out. */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
