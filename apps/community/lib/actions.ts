@@ -5,7 +5,7 @@ import { createClient } from "@meridianher/db/server"
 import { sanitizeRichText, plainText } from "@meridianher/ui/lib/rich-text"
 import { z } from "zod"
 
-import { getViewer } from "../lib/data"
+import { getViewer } from "@/lib/data"
 
 type Result = { error?: string }
 

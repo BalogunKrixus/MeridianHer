@@ -63,6 +63,8 @@ const pairs = [
   ...spaces.flatMap((s) => [
     [`space-${s}-ink`, "background", TEXT],
     [`space-${s}-ink`, "card", TEXT],
+  ["sidebar-foreground", "sidebar", TEXT],
+  ["sidebar-accent-foreground", "sidebar-accent", TEXT],
   ]),
 ]
 

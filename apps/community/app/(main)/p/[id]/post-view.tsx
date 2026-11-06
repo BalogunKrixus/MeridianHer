@@ -16,8 +16,8 @@ import { ExpertAnswer, ReplyThread, type ExpertAnswerData, type ReplyData } from
 import { ReportSheet } from "@meridianher/ui/patterns/report-sheet"
 import { RichTextContent } from "@meridianher/ui/patterns/rich-text-content"
 
-import { useAccount } from "../../account-gate"
-import { createReply, react, report, setSaved } from "../../actions"
+import { useAccount } from "@/components/account-gate"
+import { createReply, react, report, setSaved } from "@/lib/actions"
 
 type Post = {
   id: string

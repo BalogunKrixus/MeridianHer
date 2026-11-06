@@ -61,13 +61,18 @@ const foreignKeys = (
 ).rows
 
 const functions = (
-  await pg.query<{ name: string; args: { name: string; type: string; has_default: boolean }[]; returns: string; returns_set: boolean }>(`
+  await pg.query<{ name: string; args: { name: string; type: string; has_default: boolean }[]; returns: string; returns_set: boolean; table_cols: { name: string; type: string }[] | null }>(`
     select p.proname as name,
            coalesce((
              select json_agg(json_build_object('name', a.name, 'type', format_type(a.type, null), 'has_default', a.ord > p.pronargs - p.pronargdefaults) order by a.ord)
              from unnest(p.proargnames[1:p.pronargs], p.proargtypes::oid[]) with ordinality a(name, type, ord)
            ), '[]') as args,
-           format_type(p.prorettype, null) as returns, p.proretset as returns_set
+           format_type(p.prorettype, null) as returns, p.proretset as returns_set,
+           (
+             select json_agg(json_build_object('name', t.name, 'type', format_type(t.type, null)) order by t.ord)
+             from unnest(p.proargnames, p.proallargtypes::oid[], p.proargmodes::text[]) with ordinality t(name, type, mode, ord)
+             where t.mode = 't'
+           ) as table_cols
     from pg_proc p join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'public' and p.prokind = 'f'
     order by p.proname`)
@@ -89,6 +94,8 @@ function tsType(udt: string): string {
     case "numeric":
     case "float4":
     case "float8":
+    case "real":
+    case "double precision":
       return "number"
     case "json":
     case "jsonb":
@@ -146,7 +153,9 @@ function functionBlock(f: (typeof functions)[number]) {
   const args = f.args.length
     ? `{\n${indent(f.args.map((a) => `${a.name}${a.has_default ? "?" : ""}: ${tsType(sqlTypeToUdt(a.type))}`).join("\n"), 4)}\n  }`
     : "never"
-  const returns = tsType(sqlTypeToUdt(f.returns)) + (f.returns_set ? "[]" : "")
+  const returns = f.table_cols
+    ? `{\n${indent(f.table_cols.map((c) => `${c.name}: ${tsType(sqlTypeToUdt(c.type))}`).join("\n"), 4)}\n  }[]`
+    : tsType(sqlTypeToUdt(f.returns)) + (f.returns_set ? "[]" : "")
   return `${f.name}: {\n  Args: ${args}\n  Returns: ${returns}\n}`
 }
 

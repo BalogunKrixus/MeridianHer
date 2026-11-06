@@ -3,7 +3,7 @@
 import * as React from "react"
 import { SignInSheet } from "@meridianher/ui/patterns/sign-in-sheet"
 
-import { sendMagicLink, signInWithGoogle } from "./auth/actions"
+import { sendMagicLink, signInWithGoogle } from "@/lib/auth-actions"
 
 type Gate = {
   signedIn: boolean

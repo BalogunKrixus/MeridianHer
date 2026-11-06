@@ -88,3 +88,33 @@ export function toPostCard(row: Views<"feed_posts">, saved: Set<string>): PostCa
     saved: saved.has(row.id!),
   }
 }
+
+/** Unread notifications for the bell and the phone tab bar. */
+export const getUnreadCount = cache(async () => {
+  const viewer = await getViewer()
+  if (!viewer?.onboarding_complete) return 0
+  const supabase = await createClient()
+  const { count } = await supabase
+    .from("notifications")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", viewer.user_id)
+    .is("read_at", null)
+  return count ?? 0
+})
+
+/** The site wide banner an admin has switched on, if any (PRD 9.7). */
+export const getBanner = cache(async () => {
+  const supabase = await createClient()
+  const now = new Date().toISOString()
+  const { data } = await supabase
+    .from("announcements")
+    .select("id, body")
+    .eq("banner", true)
+    .is("space_id", null)
+    .lte("starts_at", now)
+    .or(`ends_at.is.null,ends_at.gt.${now}`)
+    .order("starts_at", { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  return data
+})

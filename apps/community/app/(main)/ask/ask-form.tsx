@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation"
 import { Composer, type ComposerSpace } from "@meridianher/ui/patterns/composer"
 
-import { createPost } from "../actions"
+import { createPost } from "@/lib/actions"
 
 export function AskForm({ spaces, defaultSpace }: { spaces: ComposerSpace[]; defaultSpace?: string }) {
   const router = useRouter()

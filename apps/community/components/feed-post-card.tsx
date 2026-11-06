@@ -4,8 +4,8 @@ import * as React from "react"
 import { PostCard, type PostCardData } from "@meridianher/ui/patterns/post-card"
 import { ReportSheet } from "@meridianher/ui/patterns/report-sheet"
 
-import { useAccount } from "./account-gate"
-import { report, setSaved } from "./actions"
+import { useAccount } from "@/components/account-gate"
+import { report, setSaved } from "@/lib/actions"
 
 export function FeedPostCard({ post }: { post: PostCardData }) {
   const { requireAccount } = useAccount()

@@ -1591,7 +1591,20 @@ export type Database = {
           newest?: boolean
           max_results?: number
         }
-        Returns: string[]
+        Returns: {
+          id: string
+          title: string
+          space_slug: string
+          space_name: string
+          space_tone: Database["public"]["Enums"]["space_tone"]
+          created_at: string
+          reply_count: number
+          has_expert_answer: boolean
+          author_name: string
+          snippet: string
+          reply_snippet: string
+          rank: number
+        }[]
       }
       set_expert_status: {
         Args: {

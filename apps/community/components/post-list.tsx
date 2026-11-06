@@ -3,7 +3,7 @@ import { ButtonLink } from "@meridianher/ui/components/button"
 import { EmptyState } from "@meridianher/ui/patterns/cards"
 import type { PostCardData } from "@meridianher/ui/patterns/post-card"
 
-import { FeedPostCard } from "./feed-post-card"
+import { FeedPostCard } from "@/components/feed-post-card"
 
 /** A feed of post cards with a designed empty state and "Show more" (PRD 6.3 and 6.10). */
 export function PostList({

@@ -5,7 +5,7 @@ import { SignInForm } from "@meridianher/ui/patterns/sign-in-sheet"
 import { safeNext } from "@meridianher/db/proxy"
 import { TriangleAlertIcon } from "lucide-react"
 
-import { sendMagicLink, signInWithGoogle } from "../auth/actions"
+import { sendMagicLink, signInWithGoogle } from "@/lib/auth-actions"
 
 export const metadata: Metadata = { title: "Sign in" }
 

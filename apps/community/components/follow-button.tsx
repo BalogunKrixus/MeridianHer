@@ -4,8 +4,8 @@ import * as React from "react"
 import { CheckIcon, PlusIcon } from "lucide-react"
 import { Button } from "@meridianher/ui/components/button"
 
-import { useAccount } from "./account-gate"
-import { followSpace } from "./actions"
+import { useAccount } from "@/components/account-gate"
+import { followSpace } from "@/lib/actions"
 
 export function FollowButton({ spaceId, following }: { spaceId: string; following: boolean }) {
   const { requireAccount } = useAccount()

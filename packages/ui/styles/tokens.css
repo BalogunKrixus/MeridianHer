@@ -39,6 +39,15 @@
   --border: #e8e1da;
   --input: #8f857c;
   --ring: #5b2e52;
+  /* Admin sidebar */
+  --sidebar: #f5f1ec;
+  --sidebar-foreground: #1a1a2e;
+  --sidebar-primary: #5b2e52;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f1e8ef;
+  --sidebar-accent-foreground: #5b2e52;
+  --sidebar-border: #e8e1da;
+  --sidebar-ring: #5b2e52;
   --shadow-soft: 0 1px 2px rgba(26, 26, 46, 0.04), 0 4px 16px rgba(26, 26, 46, 0.06);
 
   /* Charts: plum first, then terracotta, expert green, gold, dusk blue */
@@ -112,6 +121,14 @@
   --border: #352e40;
   --input: #756c86;
   --ring: #d7b4cf;
+  --sidebar: #1b1724;
+  --sidebar-foreground: #f3eee8;
+  --sidebar-primary: #d7b4cf;
+  --sidebar-primary-foreground: #16131d;
+  --sidebar-accent: #3a2f44;
+  --sidebar-accent-foreground: #f3eee8;
+  --sidebar-border: #352e40;
+  --sidebar-ring: #d7b4cf;
   --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.4);
 
   --chart-1: #d7b4cf;

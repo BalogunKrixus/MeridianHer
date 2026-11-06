@@ -10,9 +10,8 @@ import type { ExpertAnswerData, ReplyData } from "@meridianher/ui/patterns/reply
 import { RichTextContent } from "@meridianher/ui/patterns/rich-text-content"
 import { createClient } from "@meridianher/db/server"
 
-import { getViewer, toWarning } from "../../../lib/data"
-import { EXPERT_CATEGORY_LABELS, timeAgo } from "../../../lib/format"
-import { SiteHeader } from "../../site-header"
+import { getViewer, toWarning } from "@/lib/data"
+import { EXPERT_CATEGORY_LABELS, timeAgo } from "@/lib/format"
 import { PostView } from "./post-view"
 
 async function loadPost(id: string) {
@@ -40,23 +39,20 @@ export default async function PostPage({ params }: PageProps<"/p/[id]">) {
       : null
     if (!own) notFound()
     return (
-      <>
-        <SiteHeader />
         <main className="mx-auto flex max-w-[680px] flex-col gap-4 px-4 py-8">
-          <Alert>
-            <ClockIcon aria-hidden />
-            <AlertTitle>{own.status === "held" ? "Your post is being checked" : "This post is not visible"}</AlertTitle>
-            <AlertDescription>
-              {own.status === "held"
-                ? `"${own.title}" will appear as soon as a moderator has looked at it. New accounts have their first posts checked to keep everyone safe.`
-                : `"${own.title}" was removed by a moderator. You will get a notification explaining which rule it broke.`}
-            </AlertDescription>
-          </Alert>
-          <ButtonLink variant="outline" className="self-start" href="/">
-            Back to the feed
-          </ButtonLink>
-        </main>
-      </>
+        <Alert>
+          <ClockIcon aria-hidden />
+          <AlertTitle>{own.status === "held" ? "Your post is being checked" : "This post is not visible"}</AlertTitle>
+          <AlertDescription>
+            {own.status === "held"
+              ? `"${own.title}" will appear as soon as a moderator has looked at it. New accounts have their first posts checked to keep everyone safe.`
+              : `"${own.title}" was removed by a moderator. You will get a notification explaining which rule it broke.`}
+          </AlertDescription>
+        </Alert>
+        <ButtonLink variant="outline" className="self-start" href="/">
+          Back to the feed
+        </ButtonLink>
+      </main>
     )
   }
 
@@ -126,35 +122,32 @@ export default async function PostPage({ params }: PageProps<"/p/[id]">) {
   const visibleReplies = replies.filter((r) => !r.removed).length
 
   return (
-    <>
-      <SiteHeader />
-      <main className="mx-auto flex max-w-[680px] flex-col gap-5 px-4 py-8">
-        <PostView
-          post={{
-            id: post.id!,
-            title: post.title!,
-            body: post.body as JSONContent | null,
-            authorName: post.author_name!,
-            anonymous: !!post.fully_anonymous,
-            asTeam: !!post.as_team,
-            space: { slug: post.space_slug!, name: post.space_name!, tone: post.space_tone as SpaceTone },
-            tags: post.tags ?? [],
-            timeAgo: timeAgo(post.created_at),
-            edited: !!post.edited_at,
-            locked: !!post.locked,
-            contentWarning: toWarning(post.content_warning),
-            reactions: counts(post.reaction_counts),
-            myReactions: myReactions(post.id!),
-            saved: !!saved.data,
-          }}
-          expertAnswers={expertAnswers}
-          thread={thread}
-          replyCount={visibleReplies}
-        />
-        <p className="text-center text-small text-muted-foreground">
-          Community answers share experience, not diagnosis. If you are worried, speak to a doctor.
-        </p>
-      </main>
-    </>
+    <main className="mx-auto flex max-w-[680px] flex-col gap-5 px-4 py-8">
+      <PostView
+        post={{
+          id: post.id!,
+          title: post.title!,
+          body: post.body as JSONContent | null,
+          authorName: post.author_name!,
+          anonymous: !!post.fully_anonymous,
+          asTeam: !!post.as_team,
+          space: { slug: post.space_slug!, name: post.space_name!, tone: post.space_tone as SpaceTone },
+          tags: post.tags ?? [],
+          timeAgo: timeAgo(post.created_at),
+          edited: !!post.edited_at,
+          locked: !!post.locked,
+          contentWarning: toWarning(post.content_warning),
+          reactions: counts(post.reaction_counts),
+          myReactions: myReactions(post.id!),
+          saved: !!saved.data,
+        }}
+        expertAnswers={expertAnswers}
+        thread={thread}
+        replyCount={visibleReplies}
+      />
+      <p className="text-center text-small text-muted-foreground">
+        Community answers share experience, not diagnosis. If you are worried, speak to a doctor.
+      </p>
+    </main>
   )
 }
