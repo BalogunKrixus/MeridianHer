@@ -336,10 +336,20 @@ export function ModerationQueue({
   // J and K move, X selects, A H W M B E act on the focused item (PRD 9.3)
   React.useEffect(() => {
     const keys = Object.fromEntries(Object.entries(QUEUE_SHORTCUTS).map(([action, key]) => [key.toLowerCase(), action as QueueAction]))
+    let leader = 0
     const onKey = (e: KeyboardEvent) => {
       if (pending || e.metaKey || e.ctrlKey || e.altKey) return
       if (e.target instanceof HTMLElement && (e.target.isContentEditable || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName))) return
       const key = e.key.toLowerCase()
+      // G then a letter jumps to another page (command palette); never let "G A" approve or "G M" mute here
+      if (key === "g") {
+        leader = Date.now()
+        return
+      }
+      if (Date.now() - leader < 1000) {
+        leader = 0
+        return
+      }
       const current = visible[focus]
       if (key === "j" || key === "arrowdown") {
         e.preventDefault()

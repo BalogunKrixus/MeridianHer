@@ -13,6 +13,7 @@ const MESSAGES: Record<string, string> = {
   rate_limited: "You have posted a lot in the last hour. Please take a short break and try again later.",
   post_closed: "Replies are closed on this post.",
   reply_too_deep: "You can reply to a reply, but not further down the thread.",
+  blocked_words: "This includes words we do not allow here. Please change them and try again.",
 }
 
 function friendly(error: { message: string; code?: string } | null, fallback: string) {
@@ -156,7 +157,6 @@ export async function followSpace(spaceId: string, follow: boolean): Promise<Res
 
 const EDIT_MESSAGES: Record<string, string> = {
   edit_window_closed: "Posts and replies can be edited for 24 hours. You can still delete it.",
-  blocked_words: "Your post includes words we do not allow. Please change them and try again.",
 }
 
 export async function editPost(id: string, input: { title: string; body: unknown }): Promise<Result> {
