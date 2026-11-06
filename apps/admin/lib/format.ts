@@ -70,3 +70,5 @@ export const REASON_TEMPLATES = [
   { code: "privacy", label: "Privacy", text: "This shared someone's real name, photo or personal details." },
   { code: "respect", label: "Hate, harassment or sexual content", text: "No hate, harassment or sexual content outside health discussion." },
 ] as const
+
+export const STATUS_BADGE: Record<string, "success" | "warning" | "destructive"> = { active: "success", muted: "warning", banned: "destructive" }
