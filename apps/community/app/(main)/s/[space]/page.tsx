@@ -7,7 +7,9 @@ import { SPACE_ICONS, spaceToneStyle, type SpaceTone } from "@meridianher/ui/lib
 import { CrisisCard, GuidelinesCard } from "@meridianher/ui/patterns/cards"
 import { createClient } from "@meridianher/db/server"
 
-import { getCrisisResources, getFeed, getSpaces, getViewer, type FeedSort } from "@/lib/data"
+import { getBanner, getCrisisResources, getFeed, getPinned, getSpaces, getViewer, type FeedSort } from "@/lib/data"
+import { SiteBanner } from "@/components/site-banner"
+import { FeedPostCard } from "@/components/feed-post-card"
 import { FollowButton } from "@/components/follow-button"
 import { PostList } from "@/components/post-list"
 import { SortTabs } from "@/components/sort-tabs"
@@ -38,13 +40,16 @@ export default async function SpacePage({ params, searchParams }: PageProps<"/s/
   const before = typeof query.before === "string" ? query.before : undefined
   const viewer = await getViewer()
   const supabase = await createClient()
-  const [{ posts, nextBefore }, spaces, follow] = await Promise.all([
+  const [{ posts, nextBefore }, spaces, follow, pinned, banner] = await Promise.all([
     getFeed({ sort, spaceId: space.id, before }),
     getSpaces(),
     viewer
       ? supabase.from("space_follows").select("id").eq("space_id", space.id).eq("user_id", viewer.user_id).maybeSingle()
       : Promise.resolve({ data: null }),
+    before ? Promise.resolve([]) : getPinned(space.id),
+    getBanner(space.id),
   ])
+  const pinnedIds = new Set(pinned.map((p) => p.id))
   const Icon = SPACE_ICONS[space.icon] ?? HeartIcon
   const base = `/s/${space.slug}`
 

@@ -88,14 +88,21 @@ export function CommunityPatterns() {
 
       <Specimen
         title="Post page: expert answer and replies"
-        note="Expert answer pinned first, then threaded replies two levels deep."
+        note="Expert answer pinned first, then threaded replies two levels deep. Save, copy link, edit, delete and report sit in one overflow menu."
         bare
         className="flex max-w-[680px] flex-col gap-4"
       >
         <ExpertAnswer answer={sampleExpertAnswer} />
         <Card>
           <CardContent>
-            <ReplyThread replies={sampleReplies} />
+            <ReplyThread
+              replies={sampleReplies}
+              onReply={() => {}}
+              onReport={() => setReportOpen(true)}
+              onSave={() => {}}
+              onCopyLink={() => {}}
+              onHelped={() => {}}
+            />
           </CardContent>
         </Card>
       </Specimen>

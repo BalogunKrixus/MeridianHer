@@ -9,6 +9,7 @@ import { AuditRow } from "../patterns/audit-row"
 import { InitialAvatar } from "../patterns/chips"
 import { createDataTableColumns, DataTable } from "../patterns/data-table"
 import { FilterBar } from "../patterns/filter-bar"
+import { ActivityChart } from "../patterns/activity-chart"
 import { QueueItem } from "../patterns/queue-item"
 import { StatCard } from "../patterns/stat-card"
 import { Section, Specimen } from "./layout"
@@ -69,6 +70,22 @@ export function AdminPatterns() {
           <StatCard label="Questions answered in 24 hours" value="81%" change={0} />
           <StatCard label="Open reports" value="7" change={-22} goodWhen="down" trend={[12, 10, 11, 9, 8, 9, 7]} />
         </div>
+      </Specimen>
+
+      <Specimen title="Activity chart" note="Daily counts for the overview. Series take the chart colour tokens in order.">
+        <ActivityChart
+          data={Array.from({ length: 14 }, (_, i) => ({
+            day: new Date(Date.UTC(2026, 9, 24 + i)).toISOString().slice(0, 10),
+            posts: [12, 15, 11, 18, 22, 19, 25, 21, 24, 28, 26, 31, 29, 34][i],
+            replies: [40, 46, 38, 52, 61, 57, 70, 66, 72, 80, 77, 88, 85, 96][i],
+            members: [5, 7, 4, 9, 11, 8, 12, 10, 9, 14, 13, 15, 12, 17][i],
+          }))}
+          series={[
+            { key: "posts", label: "Posts" },
+            { key: "replies", label: "Replies" },
+            { key: "members", label: "New members" },
+          ]}
+        />
       </Specimen>
 
       <Specimen title="Data table" note="TanStack Table v9: sort by any column, select rows for bulk actions, paginate." bare>

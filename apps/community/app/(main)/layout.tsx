@@ -1,10 +1,9 @@
 import { after } from "next/server"
-import { MegaphoneIcon } from "lucide-react"
-import { Alert, AlertDescription } from "@meridianher/ui/components/alert"
 import { createClient } from "@meridianher/db/server"
 
 import { getBanner, getUnreadCount, getViewer } from "@/lib/data"
 import { MobileNav } from "@/components/mobile-nav"
+import { SiteBanner } from "@/components/site-banner"
 import { SiteFooter } from "@/components/site-footer"
 import { SiteHeader } from "@/components/site-header"
 
@@ -24,10 +23,7 @@ export default async function MainLayout({ children }: LayoutProps<"/">) {
       <SiteHeader />
       {banner ? (
         <div className="mx-auto max-w-6xl px-4 pt-4">
-          <Alert>
-            <MegaphoneIcon aria-hidden />
-            <AlertDescription className="text-foreground">{banner.body}</AlertDescription>
-          </Alert>
+          <SiteBanner id={banner.id} body={banner.body} />
         </div>
       ) : null}
       {children}

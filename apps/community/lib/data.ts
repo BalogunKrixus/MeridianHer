@@ -31,6 +31,7 @@ export const getSpaces = cache(async () => {
   const { data } = await supabase
     .from("spaces")
     .select("id, slug, name, description, icon, accent_color, rules, tags, ask_expert_enabled, show_crisis_card, min_age")
+    .eq("archived", false)
     .order("sort_order")
   return data ?? []
 })
@@ -103,15 +104,12 @@ export const getUnreadCount = cache(async () => {
   return count ?? 0
 })
 
-/** The site wide banner an admin has switched on, if any (PRD 9.7). */
-export const getBanner = cache(async () => {
+/** The banner an admin has switched on, site wide or for one space (PRD 9.7). */
+export const getBanner = cache(async (spaceId?: string) => {
   const supabase = await createClient()
   const now = new Date().toISOString()
-  const { data } = await supabase
-    .from("announcements")
-    .select("id, body")
-    .eq("banner", true)
-    .is("space_id", null)
+  const base = supabase.from("announcements").select("id, body").eq("banner", true)
+  const { data } = await (spaceId ? base.eq("space_id", spaceId) : base.is("space_id", null))
     .lte("starts_at", now)
     .or(`ends_at.is.null,ends_at.gt.${now}`)
     .order("starts_at", { ascending: false })
@@ -126,3 +124,16 @@ export const getCrisisResources = cache(async (): Promise<CrisisCountry[]> => {
   const { data } = await supabase.from("settings").select("value").eq("key", "crisis_resources").maybeSingle()
   return Array.isArray(data?.value) && data.value.length ? (data.value as CrisisCountry[]) : DEFAULT_CRISIS_RESOURCES
 })
+
+/** Pinned and announcement posts that sit above a space feed (PRD 6.3), up to three. */
+export async function getPinned(spaceId: string) {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from("feed_posts")
+    .select("*")
+    .eq("space_id", spaceId)
+    .or("pinned.eq.true,type.eq.announcement")
+    .order("created_at", { ascending: false })
+    .limit(3)
+  return (data ?? []).map((r) => ({ ...toPostCard(r, new Set()), variant: (r.type === "announcement" ? "announcement" : "pinned") as "announcement" | "pinned" }))
+}

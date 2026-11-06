@@ -1,4 +1,4 @@
-import type { Metadata, Viewport } from "next"
+import type { Metadata } from "next"
 
 import { getViewer } from "@/lib/data"
 import { Providers } from "@/components/providers"
@@ -12,13 +12,6 @@ export const metadata: Metadata = {
   title: { default: "MeridianHer Community", template: "%s · MeridianHer" },
   description: "Talk openly about every chapter of your health, from first periods to menopause, with answers from verified experts.",
   openGraph: { siteName: "MeridianHer", type: "website", locale: "en_GB" },
-}
-
-export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#faf8f4" },
-    { media: "(prefers-color-scheme: dark)", color: "#16131d" },
-  ],
 }
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {

@@ -7,13 +7,14 @@ import { ReportSheet } from "@meridianher/ui/patterns/report-sheet"
 import { useAccount } from "@/components/account-gate"
 import { report, setSaved } from "@/lib/actions"
 
-export function FeedPostCard({ post }: { post: PostCardData }) {
+export function FeedPostCard({ post, variant }: { post: PostCardData; variant?: "pinned" | "announcement" }) {
   const { requireAccount } = useAccount()
   const [reporting, setReporting] = React.useState(false)
   return (
     <>
       <PostCard
         post={post}
+        variant={variant}
         onSave={async (saved) => {
           if (!requireAccount("save this post")) return false
           return !(await setSaved("post", post.id, saved)).error
