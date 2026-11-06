@@ -56,6 +56,7 @@ function Composer({
   spaces,
   defaultSpace,
   similar,
+  onTitleChange,
   draftKey,
   onSubmit,
   className,
@@ -64,6 +65,8 @@ function Composer({
   defaultSpace?: string
   /** "Others asked this" results for the current title */
   similar?: React.ReactNode
+  /** Called as the title changes, so the page can look up similar posts */
+  onTitleChange?: (title: string) => void
   /** localStorage key; when set, the draft autosaves every 5 seconds and is restored on return (PRD 6.5) */
   draftKey?: string
   /** Resolve with an error message to show it; resolve without one on success and the draft is cleared */
@@ -91,6 +94,9 @@ function Composer({
     const early = titleRef.current?.value
     if (early) setTitle(early)
   }, [])
+
+  const announceTitle = React.useEffectEvent((value: string) => onTitleChange?.(value))
+  React.useEffect(() => announceTitle(title), [title])
 
   // Restore a saved draft once, on the client
   React.useEffect(() => {

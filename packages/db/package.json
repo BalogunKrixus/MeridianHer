@@ -7,6 +7,7 @@
     "./types": "./src/database.types.ts",
     "./server": "./src/server.ts",
     "./secret": "./src/secret.ts",
+    "./public": "./src/public.ts",
     "./proxy": "./src/proxy.ts",
     "./auth": "./src/auth.ts"
   },

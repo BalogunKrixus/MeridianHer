@@ -6,6 +6,7 @@ import { createClient } from "@meridianher/db/server"
 import type { SpaceTone } from "@meridianher/ui/lib/spaces"
 import type { PostCardData } from "@meridianher/ui/patterns/post-card"
 import type { ContentWarningType } from "@meridianher/ui/patterns/content-warning-blur"
+import { DEFAULT_CRISIS_RESOURCES, type CrisisCountry } from "@meridianher/ui/patterns/cards"
 
 import { timeAgo } from "./format"
 
@@ -117,4 +118,11 @@ export const getBanner = cache(async () => {
     .limit(1)
     .maybeSingle()
   return data
+})
+
+/** Crisis lines, editable per country in admin; falls back to the defaults in the design system. */
+export const getCrisisResources = cache(async (): Promise<CrisisCountry[]> => {
+  const supabase = await createClient()
+  const { data } = await supabase.from("settings").select("value").eq("key", "crisis_resources").maybeSingle()
+  return Array.isArray(data?.value) && data.value.length ? (data.value as CrisisCountry[]) : DEFAULT_CRISIS_RESOURCES
 })

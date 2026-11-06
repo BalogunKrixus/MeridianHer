@@ -7,13 +7,14 @@ import { Button } from "@meridianher/ui/components/button"
 import { useAccount } from "@/components/account-gate"
 import { followSpace } from "@/lib/actions"
 
-export function FollowButton({ spaceId, following }: { spaceId: string; following: boolean }) {
+export function FollowButton({ spaceId, following, size }: { spaceId: string; following: boolean; size?: "sm" }) {
   const { requireAccount } = useAccount()
   const [on, setOn] = React.useState(following)
   const [pending, startTransition] = React.useTransition()
   return (
     <Button
       variant={on ? "secondary" : "outline"}
+      size={size}
       aria-pressed={on}
       disabled={pending}
       onClick={() => {

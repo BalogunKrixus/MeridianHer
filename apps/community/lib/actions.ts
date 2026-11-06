@@ -153,3 +153,101 @@ export async function followSpace(spaceId: string, follow: boolean): Promise<Res
   revalidatePath("/")
   return {}
 }
+
+const EDIT_MESSAGES: Record<string, string> = {
+  edit_window_closed: "Posts and replies can be edited for 24 hours. You can still delete it.",
+  blocked_words: "Your post includes words we do not allow. Please change them and try again.",
+}
+
+export async function editPost(id: string, input: { title: string; body: unknown }): Promise<Result> {
+  const viewer = await member()
+  if (!viewer) return SIGN_IN
+  const title = input.title.trim()
+  if (!z.uuid().safeParse(id).success || title.length < 10 || title.length > 150) {
+    return { error: "The title needs 10 to 150 characters." }
+  }
+  const body = input.body ? sanitizeRichText(input.body) : null
+  if (body && plainText(body).length > 5000) return { error: "Keep your post under 5,000 characters." }
+  const supabase = await createClient()
+  const { error } = await supabase.from("posts").update({ title, body }).eq("id", id).eq("author_id", viewer.user_id)
+  if (error) return { error: EDIT_MESSAGES[error.message] ?? friendly(error, "We could not save your changes.") }
+  revalidatePath(`/p/${id}`)
+  return {}
+}
+
+export async function editReply(id: string, postId: string, rawBody: unknown): Promise<Result> {
+  const viewer = await member()
+  if (!viewer) return SIGN_IN
+  const body = sanitizeRichText(rawBody)
+  if (!body) return { error: "Write something before you save." }
+  const supabase = await createClient()
+  const { error } = await supabase.from("replies").update({ body }).eq("id", id).eq("author_id", viewer.user_id)
+  if (error) return { error: EDIT_MESSAGES[error.message] ?? friendly(error, "We could not save your changes.") }
+  revalidatePath(`/p/${postId}`)
+  return {}
+}
+
+export async function deleteContent(type: "post" | "reply", id: string, postId?: string): Promise<Result> {
+  const viewer = await member()
+  if (!viewer) return SIGN_IN
+  if (!target.safeParse({ type, id }).success) return { error: "Something went wrong." }
+  const supabase = await createClient()
+  const { error } = await supabase.rpc("delete_my_content", { kind: type, target: id })
+  if (error) return { error: friendly(error, "We could not delete that. Please try again.") }
+  revalidatePath("/")
+  if (postId) revalidatePath(`/p/${postId}`)
+  return {}
+}
+
+export async function markHelped(replyId: string, postId: string, helped: boolean): Promise<Result> {
+  const viewer = await member()
+  if (!viewer) return SIGN_IN
+  const supabase = await createClient()
+  const { error } = await supabase.rpc("mark_helped_me", { reply: replyId, helped })
+  if (error) return { error: friendly(error, "We could not update that reply.") }
+  revalidatePath(`/p/${postId}`)
+  return {}
+}
+
+export async function markExpertAnswer(replyId: string, postId: string, isAnswer: boolean): Promise<Result> {
+  const viewer = await member()
+  if (!viewer) return SIGN_IN
+  const supabase = await createClient()
+  const { error } = await supabase.rpc("mark_expert_answer", { reply: replyId, is_answer: isAnswer })
+  if (error) return { error: friendly(error, "We could not update your answer.") }
+  revalidatePath(`/p/${postId}`)
+  return {}
+}
+
+export async function followPost(postId: string, follow: boolean): Promise<Result> {
+  const viewer = await member()
+  if (!viewer) return SIGN_IN
+  if (!z.uuid().safeParse(postId).success) return { error: "Something went wrong." }
+  const supabase = await createClient()
+  const { error } = follow
+    ? await supabase.from("post_follows").insert({ post_id: postId, user_id: viewer.user_id })
+    : await supabase.from("post_follows").delete().match({ post_id: postId, user_id: viewer.user_id })
+  if (error && error.code !== "23505") return { error: friendly(error, "We could not update this post.") }
+  return {}
+}
+
+/** True when the text suggests she may be in crisis, so the page can show help straight away (PRD section 8). */
+export async function needsCrisisHelp(text: string) {
+  const supabase = await createClient()
+  const { data } = await supabase.rpc("mentions_crisis", { content: text.slice(0, 6000) })
+  return !!data
+}
+
+/** "Others asked this" while she types a title (PRD 6.5). Not logged as a search. */
+export async function findSimilar(title: string): Promise<{ id: string; title: string; replies: number }[]> {
+  const words = title.toLowerCase().match(/[\p{L}\p{N}]{3,}/gu)?.slice(0, 8) ?? []
+  if (words.length < 2) return []
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from("feed_posts")
+    .select("id, title, reply_count")
+    .textSearch("search_vector", words.join(" | "), { config: "english" })
+    .order("reply_count", { ascending: false })
+    .limit(4)
+  return (data ?? []).map((p) => ({ id: p.id!, title: p.title!, replies: p.reply_count ?? 0 }))
+}

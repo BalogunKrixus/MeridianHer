@@ -1,9 +1,12 @@
+import { HeartIcon } from "lucide-react"
+import { Alert, AlertDescription, AlertTitle } from "@meridianher/ui/components/alert"
 import { ButtonLink } from "@meridianher/ui/components/button"
 import { GuidelinesCard } from "@meridianher/ui/patterns/cards"
 
 import { getFeed, getSpaces, getViewer, type FeedSort } from "@/lib/data"
 import { PostList } from "@/components/post-list"
 import { SortTabs } from "@/components/sort-tabs"
+import { FeaturedExperts } from "@/components/featured-experts"
 import { SpacesRail } from "@/components/spaces-rail"
 
 const SORTS: { value: FeedSort; label: string }[] = [
@@ -27,6 +30,13 @@ export default async function Home({ searchParams }: PageProps<"/">) {
   return (
     <div className="mx-auto grid max-w-6xl gap-8 px-4 py-8 lg:grid-cols-[minmax(0,680px)_1fr]">
       <main className="flex min-w-0 flex-col gap-5">
+        {params.deleted ? (
+          <Alert>
+            <HeartIcon aria-hidden />
+            <AlertTitle>Your account was deleted</AlertTitle>
+            <AlertDescription>Thank you for being part of MeridianHer. You are welcome back any time.</AlertDescription>
+          </Alert>
+        ) : null}
         <header className="flex flex-col gap-3">
           {member ? (
             <h1 className="text-h1">Welcome back, {viewer.display_name}</h1>
@@ -70,6 +80,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
       </main>
       <aside className="flex flex-col gap-4">
         <SpacesRail spaces={spaces} />
+        <FeaturedExperts />
         <GuidelinesCard />
       </aside>
     </div>

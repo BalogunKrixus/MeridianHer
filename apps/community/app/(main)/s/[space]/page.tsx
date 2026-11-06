@@ -7,10 +7,11 @@ import { SPACE_ICONS, spaceToneStyle, type SpaceTone } from "@meridianher/ui/lib
 import { CrisisCard, GuidelinesCard } from "@meridianher/ui/patterns/cards"
 import { createClient } from "@meridianher/db/server"
 
-import { getFeed, getSpaces, getViewer, type FeedSort } from "@/lib/data"
+import { getCrisisResources, getFeed, getSpaces, getViewer, type FeedSort } from "@/lib/data"
 import { FollowButton } from "@/components/follow-button"
 import { PostList } from "@/components/post-list"
 import { SortTabs } from "@/components/sort-tabs"
+import { FeaturedExperts } from "@/components/featured-experts"
 import { SpacesRail } from "@/components/spaces-rail"
 
 const SORTS: { value: FeedSort; label: string }[] = [
@@ -67,7 +68,7 @@ export default async function SpacePage({ params, searchParams }: PageProps<"/s/
           </CardContent>
         </Card>
 
-        {space.show_crisis_card ? <CrisisCard compact /> : null}
+        {space.show_crisis_card ? <CrisisCard compact countries={await getCrisisResources()} /> : null}
 
         <SortTabs current={sort} options={SORTS.map((s) => ({ ...s, href: s.value === "new" ? base : `${base}?sort=${s.value}` }))} />
 
@@ -102,6 +103,7 @@ export default async function SpacePage({ params, searchParams }: PageProps<"/s/
           </Card>
         ) : null}
         <SpacesRail spaces={spaces} current={space.slug} />
+        <FeaturedExperts />
         <GuidelinesCard />
       </aside>
     </div>

@@ -2,11 +2,28 @@
 
 import * as React from "react"
 import { cn } from "../lib/utils"
-import { FlagIcon, HeartHandshakeIcon, MessageCircleReplyIcon } from "lucide-react"
+import {
+  BadgeCheckIcon,
+  BookmarkIcon,
+  FlagIcon,
+  HeartHandshakeIcon,
+  LinkIcon,
+  MessageCircleReplyIcon,
+  MoreHorizontalIcon,
+  PencilIcon,
+  Trash2Icon,
+} from "lucide-react"
 
 import { Badge } from "../components/badge"
 import { Button } from "../components/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/card"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../components/dropdown-menu"
 import { Separator } from "../components/separator"
 import type { SpaceTone } from "../lib/spaces"
 import { ExpertBadge, TeamBadge, VerifiedTick } from "./badges"
@@ -29,10 +46,13 @@ export type ExpertAnswerData = {
 function ExpertAnswer({
   answer,
   onReact,
+  menu,
   className,
 }: {
   answer: ExpertAnswerData
   onReact?: (kind: ReactionKind, active: boolean) => void | boolean | Promise<void | boolean>
+  /** Overflow actions, for example the same ReplyMenu used in the thread */
+  menu?: React.ReactNode
   className?: string
 }) {
   const nameEl = answer.expert.href ? (
@@ -44,12 +64,15 @@ function ExpertAnswer({
   )
   return (
     <Card
-      render={<section aria-label={`Expert answer from ${answer.expert.name}`} />}
+      render={<section id={`reply-${answer.id}`} aria-label={`Expert answer from ${answer.expert.name}`} />}
       variant="flat"
-      className={cn("bg-expert-soft", className)}
+      className={cn("scroll-mt-20 bg-expert-soft", className)}
     >
       <CardHeader className="gap-3">
-        <ExpertBadge category={answer.expert.specialty} />
+        <div className="flex items-center justify-between gap-2">
+          <ExpertBadge category={answer.expert.specialty} />
+          {menu}
+        </div>
         <div className="flex items-center gap-2.5">
           <InitialAvatar name={answer.expert.name} />
           <div className="min-w-0">
@@ -84,6 +107,15 @@ export type ReplyData = {
   expertEnded?: boolean
   helpedMe?: boolean
   removed?: { reason?: string }
+  /** Written by the viewer: shows edit and delete instead of report */
+  mine?: boolean
+  /** Still inside the 24 hour edit window */
+  editable?: boolean
+  saved?: boolean
+  /** Her own expert reply, which she can mark as the expert answer */
+  canMarkExpertAnswer?: boolean
+  /** Replaces the body while she edits it */
+  editor?: React.ReactNode
   replies?: ReplyData[]
 }
 
@@ -91,10 +123,79 @@ type ReplyHandlers = {
   onReply?: (id: string) => void
   onReport?: (id: string) => void
   onReact?: (id: string, kind: ReactionKind, active: boolean) => void | boolean | Promise<void | boolean>
+  onSave?: (id: string, saved: boolean) => void
+  onCopyLink?: (id: string) => void
+  onEdit?: (id: string) => void
+  onDelete?: (id: string) => void
+  onMarkExpertAnswer?: (id: string) => void
+  /** Present only for the person who asked: lets her mark one reply as Helped me */
+  onHelped?: (id: string, helped: boolean) => void
+}
+
+/** Save, copy link, edit, delete and report for one reply, in one calm overflow menu. */
+function ReplyMenu({
+  reply,
+  onSave,
+  onCopyLink,
+  onEdit,
+  onDelete,
+  onReport,
+  onMarkExpertAnswer,
+  markExpertLabel = "Mark as expert answer",
+}: Omit<ReplyHandlers, "onReply" | "onReact" | "onHelped"> & {
+  reply: Pick<ReplyData, "id" | "mine" | "editable" | "saved" | "canMarkExpertAnswer">
+  markExpertLabel?: string
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" aria-label="More options for this reply" />}>
+        <MoreHorizontalIcon />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-52">
+        {onSave ? (
+          <DropdownMenuItem onClick={() => onSave(reply.id, !reply.saved)}>
+            <BookmarkIcon /> {reply.saved ? "Remove from saved" : "Save reply"}
+          </DropdownMenuItem>
+        ) : null}
+        {onCopyLink ? (
+          <DropdownMenuItem onClick={() => onCopyLink(reply.id)}>
+            <LinkIcon /> Copy link
+          </DropdownMenuItem>
+        ) : null}
+        {reply.canMarkExpertAnswer && onMarkExpertAnswer ? (
+          <DropdownMenuItem onClick={() => onMarkExpertAnswer(reply.id)}>
+            <BadgeCheckIcon /> {markExpertLabel}
+          </DropdownMenuItem>
+        ) : null}
+        {reply.mine ? (
+          <>
+            <DropdownMenuSeparator />
+            {reply.editable && onEdit ? (
+              <DropdownMenuItem onClick={() => onEdit(reply.id)}>
+                <PencilIcon /> Edit
+              </DropdownMenuItem>
+            ) : null}
+            {onDelete ? (
+              <DropdownMenuItem variant="destructive" onClick={() => onDelete(reply.id)}>
+                <Trash2Icon /> Delete
+              </DropdownMenuItem>
+            ) : null}
+          </>
+        ) : onReport ? (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => onReport(reply.id)}>
+              <FlagIcon /> Report
+            </DropdownMenuItem>
+          </>
+        ) : null}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
 }
 
 function ReplyItem({ reply, depth, ...handlers }: ReplyHandlers & { reply: ReplyData; depth: 0 | 1 }) {
-  const { onReply, onReport, onReact } = handlers
+  const { onReply, onReact, onHelped } = handlers
   const name = reply.author.asTeam
     ? "MeridianHer Team"
     : reply.author.anonymous
@@ -111,7 +212,7 @@ function ReplyItem({ reply, depth, ...handlers }: ReplyHandlers & { reply: Reply
 
   if (reply.removed) {
     return (
-      <li className="py-3 text-sm text-muted-foreground italic">
+      <li id={`reply-${reply.id}`} className="scroll-mt-20 py-3 text-sm text-muted-foreground italic">
         This reply was removed{reply.removed.reason ? ` (${reply.removed.reason})` : ""}.
         {children}
       </li>
@@ -119,7 +220,7 @@ function ReplyItem({ reply, depth, ...handlers }: ReplyHandlers & { reply: Reply
   }
 
   return (
-    <li className="py-3">
+    <li id={`reply-${reply.id}`} className="scroll-mt-20 py-3">
       <article aria-label={`Reply from ${name}`} className="flex gap-3">
         <InitialAvatar name={name} tone={reply.author.tone} size={depth ? "sm" : "default"} />
         <div className="min-w-0 flex-1">
@@ -135,7 +236,7 @@ function ReplyItem({ reply, depth, ...handlers }: ReplyHandlers & { reply: Reply
               </Badge>
             ) : null}
           </header>
-          <div className="mt-1.5 text-body text-foreground">{reply.body}</div>
+          {reply.editor ?? <div className="mt-1.5 text-body text-foreground">{reply.body}</div>}
           <div className="mt-2 flex flex-wrap items-center gap-1">
             <ReactionBar
               counts={reply.reactions}
@@ -149,10 +250,22 @@ function ReplyItem({ reply, depth, ...handlers }: ReplyHandlers & { reply: Reply
                 Reply
               </Button>
             ) : null}
-            {onReport ? (
-              <Button variant="ghost" size="icon-sm" aria-label="Report reply" onClick={() => onReport(reply.id)}>
-                <FlagIcon />
+            {onHelped && !reply.mine && !reply.author.asTeam ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                aria-pressed={!!reply.helpedMe}
+                onClick={() => onHelped(reply.id, !reply.helpedMe)}
+                className="aria-pressed:text-primary"
+              >
+                <HeartHandshakeIcon data-icon="inline-start" aria-hidden />
+                {reply.helpedMe ? "You marked this" : "This helped me"}
               </Button>
+            ) : null}
+            {handlers.onSave || handlers.onCopyLink || handlers.onReport || (reply.mine && handlers.onDelete) ? (
+              <span className="ml-auto">
+                <ReplyMenu reply={reply} {...handlers} />
+              </span>
             ) : null}
           </div>
           {children}
@@ -180,4 +293,4 @@ function ReplyThread({
   )
 }
 
-export { ExpertAnswer, ReplyThread }
+export { ExpertAnswer, ReplyMenu, ReplyThread }
