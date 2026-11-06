@@ -1,13 +1,13 @@
 import * as React from "react"
-import { cn } from "cn"
+import { cn } from "../lib/utils"
 import { XIcon } from "lucide-react"
 
+import { Avatar, AvatarFallback } from "../components/avatar"
+import { Badge } from "../components/badge"
+import { Button } from "../components/button"
 import { spaceToneStyle, type SpaceTone } from "../lib/spaces"
 
-/**
- * Space chip: 15% accent tint with foreground text (PRD section 12, space
- * accents). Renders a link when `href` is set.
- */
+/** Space chip in the space accent tint (PRD section 12). Renders a link when `href` is set. */
 function SpaceChip({
   name,
   tone,
@@ -21,101 +21,48 @@ function SpaceChip({
   icon?: React.ComponentType<{ className?: string }>
   className?: string
 }) {
-  const classes = cn(
-    "relative inline-flex h-6 max-w-full items-center gap-1.5 rounded-full bg-[color-mix(in_oklab,var(--tone)_15%,transparent)] px-2.5 text-xs font-medium text-foreground",
-    href && "tap-target transition-colors hover:bg-[color-mix(in_oklab,var(--tone)_25%,transparent)] focus-visible:ring-3 focus-visible:ring-ring focus-visible:outline-none",
-    className
-  )
-  const content = (
-    <>
-      {Icon ? (
-        <Icon className="size-3.5 shrink-0 text-(--tone-ink)" aria-hidden />
-      ) : (
-        <span className="size-1.5 shrink-0 rounded-full bg-(--tone)" aria-hidden />
-      )}
+  return (
+    <Badge
+      variant="space"
+      style={spaceToneStyle(tone)}
+      className={className}
+      render={href ? <a href={href} /> : undefined}
+    >
+      {Icon ? <Icon aria-hidden /> : null}
       <span className="truncate">{name}</span>
-    </>
-  )
-  return href ? (
-    <a href={href} className={classes} style={spaceToneStyle(tone)}>
-      {content}
-    </a>
-  ) : (
-    <span className={classes} style={spaceToneStyle(tone)}>
-      {content}
-    </span>
+    </Badge>
   )
 }
 
-/**
- * Tag chip. Static label, link, or a pressable filter chip (pass `pressed`).
- * Filter chips are 44px tall on touch.
- */
+/** Tag chip: static label, link, or removable (active filters). Pressable tags use ToggleGroup with the chip variant. */
 function TagChip({
   label,
   href,
-  pressed,
-  onPressedChange,
   onRemove,
   className,
 }: {
   label: string
   href?: string
-  pressed?: boolean
-  onPressedChange?: (pressed: boolean) => void
   onRemove?: () => void
   className?: string
 }) {
-  const base =
-    "relative inline-flex h-6 items-center gap-1 rounded-full px-2.5 text-xs font-medium whitespace-nowrap transition-colors focus-visible:ring-3 focus-visible:ring-ring focus-visible:outline-none"
-  if (pressed !== undefined) {
-    return (
-      <button
-        type="button"
-        aria-pressed={pressed}
-        onClick={() => onPressedChange?.(!pressed)}
-        className={cn(
-          base,
-          "h-8 px-3 text-sm touch:h-11 touch:px-4",
-          pressed
-            ? "bg-primary text-primary-foreground"
-            : "bg-card text-foreground shadow-soft hover:bg-secondary",
-          className
-        )}
-      >
-        {label}
-      </button>
-    )
-  }
-  if (href) {
-    return (
-      <a href={href} className={cn(base, "tap-target bg-muted text-muted-foreground hover:text-foreground", className)}>
-        {label}
-      </a>
-    )
-  }
   return (
-    <span className={cn(base, "bg-muted text-muted-foreground", className)}>
+    <Badge variant="tag" className={cn(onRemove && "pr-1", className)} render={href ? <a href={href} /> : undefined}>
       {label}
       {onRemove ? (
-        <button
-          type="button"
-          onClick={onRemove}
-          aria-label={`Remove ${label}`}
-          className="relative tap-target -mr-1 rounded-full p-0.5 hover:bg-foreground/10"
-        >
-          <XIcon className="size-3" aria-hidden />
-        </button>
+        <Button variant="ghost" size="icon-xs" className="size-4 rounded-full" onClick={onRemove} aria-label={`Remove ${label}`}>
+          <XIcon />
+        </Button>
       ) : null}
-    </span>
+    </Badge>
   )
 }
 
-/** Avatar circle with the display name's initial in the space accent tint. Never a photo for members. */
+/** Avatar with the display name's initial in the space accent tint. Never a photo for members. */
 function InitialAvatar({
   name,
   tone,
-  size = "default",
+  size,
   className,
 }: {
   name: string
@@ -123,22 +70,17 @@ function InitialAvatar({
   size?: "sm" | "default" | "lg"
   className?: string
 }) {
-  const initial = name.trim().charAt(0).toUpperCase() || "?"
   return (
-    <span
-      aria-hidden
-      style={tone ? spaceToneStyle(tone) : undefined}
-      className={cn(
-        "inline-flex shrink-0 items-center justify-center rounded-full font-heading font-medium text-foreground select-none",
-        tone ? "bg-[color-mix(in_oklab,var(--tone)_18%,var(--card))]" : "bg-secondary text-secondary-foreground",
-        size === "sm" && "size-6 text-xs",
-        size === "default" && "size-8 text-sm",
-        size === "lg" && "size-12 text-lg",
-        className
-      )}
-    >
-      {initial}
-    </span>
+    <Avatar size={size} aria-hidden className={className} style={tone ? spaceToneStyle(tone) : undefined}>
+      <AvatarFallback
+        className={cn(
+          "font-medium",
+          tone ? "bg-[color-mix(in_oklab,var(--tone)_18%,var(--card))] text-foreground" : "bg-secondary text-secondary-foreground"
+        )}
+      >
+        {name.trim().charAt(0).toUpperCase() || "?"}
+      </AvatarFallback>
+    </Avatar>
   )
 }
 

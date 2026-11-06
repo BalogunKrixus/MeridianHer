@@ -16,8 +16,8 @@ import { Button } from "@meridianher/ui/components/button"
 import { PostCard } from "@meridianher/ui/patterns/post-card"
 ```
 
-Apps need `transpilePackages: ["@meridianher/ui"]` and the three fonts in `app/fonts.ts`
-(Inter `--font-inter`, Fraunces `--font-fraunces`, Geist Mono `--font-geist-mono`).
+Apps need `transpilePackages: ["@meridianher/ui"]` and the two fonts in `app/fonts.ts`
+(Geist `--font-geist-sans`, Geist Mono `--font-geist-mono`).
 Admin sets `data-density="compact"` on `<html>` for the denser type ramp.
 
 ## Layout
@@ -26,12 +26,18 @@ Admin sets `data-density="compact"` on `<html>` for the denser type ramp.
 | --- | --- |
 | `styles/tokens.css` | Every colour, shadow and type size. The only file allowed raw colour values |
 | `styles/preset.css` | Tailwind v4 preset: theme mapping, `touch:` variant, `tap-target`, type utilities, reduced motion |
-| `src/components` | Primitives: your design system's 35 files plus AlertDialog, Kbd, Accordion, Collapsible, HoverCard, Spinner, ButtonGroup, Pagination |
+| `src/components` | Primitives from your design system (plus Kbd and Spinner from the registry), only the ones a pattern or screen uses |
 | `src/patterns` | PostCard, ReplyThread, ExpertAnswer, badges, chips, ReactionBar, ContentWarningBlur, Composer, RichTextEditor, SignInSheet, GuidelinesCard, CrisisCard, EmptyState, DataTable, StatCard, FilterBar, QueueItem, AuditRow |
 | `src/gallery` | The `/design` review page, rendered by both apps |
-| `scripts/check-tokens.mjs` | Contrast check on 92 token pairs plus the raw colour guard |
+| `scripts/check-tokens.mjs` | Contrast check on 88 token pairs plus the raw colour guard |
 
 ## Rules
+
+**Composition.** Apps use package components only: no raw button, input, card or similar where a component exists. If
+something is missing, add it here first (`pnpm dlx shadcn add <name>` from `packages/ui`), then use it. A primitive stays in the
+package only while a pattern or screen imports it. Card and Badge take a `render` prop for semantic elements
+(`render={<article />}`, `render={<a href="..." />}`). Merge classes with `cn` from `src/lib/utils`, which knows the type ramp
+(`text-h2` overrides `text-base`).
 
 **Touch targets.** On phones and touch screens (`pointer: coarse` or narrower than 768px) every control is at least 44px.
 Buttons, inputs, selects, tabs lists, toggles, menu items, sidebar items and calendar days grow visually through the
@@ -40,8 +46,8 @@ get an invisible 44px hit area from the `tap-target` utility, which needs a posi
 Desktop with a mouse keeps the compact 32px controls. New interactive components must use one of the two.
 
 **Reduced motion.** `preset.css` sets every animation and transition to 0.01ms under `prefers-reduced-motion: reduce`,
-which covers tw-animate-css, Base UI transitions, sheets, drawers, skeletons, spinners and toasts. Recharts honours the
-setting itself. For motion driven from JavaScript, use `useReducedMotion()` from `@meridianher/ui/hooks/use-reduced-motion`.
+which covers tw-animate-css, Base UI transitions, sheets and spinners. Recharts honours the setting itself. Motion driven
+from JavaScript must check the media query too.
 
 **Colour.** Semantic utilities only (`bg-card`, `text-muted-foreground`, `bg-expert`, `text-(--tone-ink)`). Space accents
 come from `spaceToneStyle(tone)`. Expert Green is only for verification and success.

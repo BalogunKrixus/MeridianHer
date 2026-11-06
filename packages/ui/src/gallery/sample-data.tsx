@@ -197,3 +197,18 @@ export const sampleAudit: AuditEntry[] = [
   },
   { id: "l3", at: "2026-11-01 19:30", actor: "Chris (super admin)", action: "reveal email", target: "Member Bright Lily", reason: "Ban evasion check", ip: "81.2.x.x" },
 ]
+
+export const sampleRichText = {
+  type: "doc",
+  content: [
+    { type: "paragraph", content: [{ type: "text", text: "What helped me most in the first weeks:" }] },
+    {
+      type: "bulletList",
+      content: [
+        { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", marks: [{ type: "bold" }], text: "Sleep when the baby sleeps" }, { type: "text", text: ", even for twenty minutes." }] }] },
+        { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", marks: [{ type: "italic" }], text: "Asking for help" }, { type: "text", text: " without apologising." }] }] },
+      ],
+    },
+    { type: "paragraph", content: [{ type: "text", text: "The " }, { type: "text", marks: [{ type: "link", attrs: { href: "https://www.nhs.uk/conditions/baby/support-and-services/your-6-week-postnatal-check/" } }], text: "NHS guide to the 6 week check" }, { type: "text", text: " is worth reading too." }] },
+  ],
+}

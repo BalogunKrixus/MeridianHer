@@ -1,4 +1,4 @@
-import { cn } from "cn"
+import { cn } from "../lib/utils"
 import { BadgeCheckIcon, ShieldCheckIcon } from "lucide-react"
 
 import { Badge } from "../components/badge"

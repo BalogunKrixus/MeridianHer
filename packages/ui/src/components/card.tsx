@@ -1,27 +1,34 @@
 import * as React from "react"
-import { cn } from "cn"
+import { mergeProps } from "@base-ui/react/merge-props"
+import { useRender } from "@base-ui/react/use-render"
+import { cn } from "../lib/utils"
 
+/** `render` swaps the element, for example `render={<article />}` or `render={<section />}`. */
 function Card({
   className,
   size = "default",
   variant = "default",
+  render,
   ...props
-}: React.ComponentProps<"div"> & {
+}: useRender.ComponentProps<"div"> & {
   size?: "default" | "sm"
   variant?: "default" | "outline" | "flat"
 }) {
-  return (
-    <div
-      data-slot="card"
-      data-size={size}
-      data-variant={variant}
-      className={cn(
-        "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl bg-card py-(--card-spacing) text-sm text-card-foreground data-[variant=default]:shadow-soft data-[variant=outline]:ring-1 data-[variant=outline]:ring-border data-[variant=flat]:bg-muted [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
-        className
-      )}
-      {...props}
-    />
-  )
+  return useRender({
+    defaultTagName: "div",
+    render,
+    props: mergeProps<"div">(
+      {
+        className: cn(
+          "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl py-(--card-spacing) text-sm text-card-foreground data-[variant=default]:shadow-soft data-[variant=outline]:ring-1 data-[variant=outline]:ring-border [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+          variant === "flat" ? "bg-muted" : "bg-card",
+          className
+        ),
+      },
+      props
+    ),
+    state: { slot: "card", size, variant },
+  })
 }
 
 function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
@@ -37,17 +44,19 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="card-title"
-      className={cn(
-        "font-heading text-base leading-snug font-medium group-data-[size=sm]/card:text-sm",
-        className
-      )}
-      {...props}
-    />
-  )
+/** `render={<h1 />}` (or h2, h3) when the title is a heading on the page. */
+function CardTitle({ className, render, ...props }: useRender.ComponentProps<"div">) {
+  return useRender({
+    defaultTagName: "div",
+    render,
+    props: mergeProps<"div">(
+      {
+        className: cn("font-heading text-base leading-snug font-medium group-data-[size=sm]/card:text-sm", className),
+      },
+      props
+    ),
+    state: { slot: "card-title" },
+  })
 }
 
 function CardDescription({ className, ...props }: React.ComponentProps<"div">) {

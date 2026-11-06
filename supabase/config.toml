@@ -1,0 +1,36 @@
+# Supabase CLI settings. Applied to the hosted project with `pnpm dlx supabase config push`.
+project_id = "meridianher"
+
+[db]
+major_version = 17
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
+
+[auth]
+site_url = "http://localhost:3000"
+additional_redirect_urls = [
+  "http://localhost:3000/auth/callback",
+  "http://localhost:3001/auth/callback",
+  "https://community.meridianher.com/auth/callback",
+  "https://admin.meridianher.com/auth/callback",
+  "https://meridianher-*.vercel.app/auth/callback",
+]
+enable_signup = true
+
+# Magic link sign in, valid for 15 minutes (PRD section 5). No passwords.
+[auth.email]
+enable_signup = true
+enable_confirmations = false
+otp_expiry = 900
+
+[auth.external.google]
+enabled = true
+client_id = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID)"
+secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"
+
+# Adds user_role and onboarded to every access token
+[auth.hook.custom_access_token]
+enabled = true
+uri = "pg-functions://postgres/public/custom_access_token_hook"
