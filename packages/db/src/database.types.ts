@@ -372,6 +372,48 @@ export type Database = {
           },
         ]
       }
+      member_notes: {
+        Row: {
+          id: string
+          member_id: string
+          author_id: string | null
+          note: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          member_id: string
+          author_id?: string | null
+          note: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          member_id?: string
+          author_id?: string | null
+          note?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_notes_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "member_notes_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       member_sanctions: {
         Row: {
           id: string
@@ -645,6 +687,45 @@ export type Database = {
           },
         ]
       }
+      post_follows: {
+        Row: {
+          id: string
+          post_id: string
+          user_id: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          post_id: string
+          user_id: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          post_id?: string
+          user_id?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_follows_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_follows_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       posts: {
         Row: {
           id: string
@@ -672,6 +753,7 @@ export type Database = {
           delete_reason: string | null
           created_at: string
           updated_at: string
+          view_count: number
         }
         Insert: {
           id?: string
@@ -699,6 +781,7 @@ export type Database = {
           delete_reason?: string | null
           created_at?: string
           updated_at?: string
+          view_count?: number
         }
         Update: {
           id?: string
@@ -726,6 +809,7 @@ export type Database = {
           delete_reason?: string | null
           created_at?: string
           updated_at?: string
+          view_count?: number
         }
         Relationships: [
           {
@@ -801,6 +885,35 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      queue_claims: {
+        Row: {
+          target_type: Database["public"]["Enums"]["target_type"]
+          target_id: string
+          claimed_by: string
+          claimed_at: string
+        }
+        Insert: {
+          target_type: Database["public"]["Enums"]["target_type"]
+          target_id: string
+          claimed_by: string
+          claimed_at?: string
+        }
+        Update: {
+          target_type?: Database["public"]["Enums"]["target_type"]
+          target_id?: string
+          claimed_by?: string
+          claimed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "queue_claims_claimed_by_fkey"
+            columns: ["claimed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       reactions: {
         Row: {
@@ -1046,6 +1159,30 @@ export type Database = {
           },
         ]
       }
+      search_log: {
+        Row: {
+          id: string
+          term: string
+          results: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          term: string
+          results: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          term?: string
+          results?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       settings: {
         Row: {
           id: string
@@ -1287,11 +1424,43 @@ export type Database = {
       }
     }
     Functions: {
+      admin_analytics: {
+        Args: never
+        Returns: Json
+      }
+      admin_overview: {
+        Args: {
+          days?: number
+          in_space?: string
+        }
+        Returns: Json
+      }
+      appeal_sanction: {
+        Args: {
+          sanction: string
+          message: string
+        }
+        Returns: undefined
+      }
+      change_display_name: {
+        Args: {
+          name: string
+        }
+        Returns: undefined
+      }
       check_display_name: {
         Args: {
           name: string
         }
         Returns: string
+      }
+      claim_item: {
+        Args: {
+          kind: Database["public"]["Enums"]["target_type"]
+          target: string
+          release?: boolean
+        }
+        Returns: undefined
       }
       complete_onboarding: {
         Args: {
@@ -1307,6 +1476,173 @@ export type Database = {
           event: Json
         }
         Returns: Json
+      }
+      decide_appeal: {
+        Args: {
+          sanction: string
+          overturn: boolean
+          note?: string
+        }
+        Returns: undefined
+      }
+      delete_my_content: {
+        Args: {
+          kind: Database["public"]["Enums"]["target_type"]
+          target: string
+        }
+        Returns: undefined
+      }
+      export_my_data: {
+        Args: never
+        Returns: Json
+      }
+      invite_details: {
+        Args: {
+          token: string
+        }
+        Returns: Json
+      }
+      invite_expert: {
+        Args: {
+          email: string
+          name: string
+          category: Database["public"]["Enums"]["expert_category"]
+        }
+        Returns: string
+      }
+      mark_expert_answer: {
+        Args: {
+          reply: string
+          is_answer: boolean
+        }
+        Returns: undefined
+      }
+      mark_helped_me: {
+        Args: {
+          reply: string
+          helped: boolean
+        }
+        Returns: undefined
+      }
+      mark_notifications_read: {
+        Args: never
+        Returns: undefined
+      }
+      mentions_crisis: {
+        Args: {
+          content: string
+        }
+        Returns: boolean
+      }
+      moderate: {
+        Args: {
+          kind: Database["public"]["Enums"]["target_type"]
+          target: string
+          action: string
+          reason_code?: string
+          reason_text?: string
+          extra?: Json
+        }
+        Returns: undefined
+      }
+      prepare_account_deletion: {
+        Args: {
+          remove_content: boolean
+        }
+        Returns: undefined
+      }
+      record_view: {
+        Args: {
+          post: string
+        }
+        Returns: undefined
+      }
+      reveal_member_pii: {
+        Args: {
+          member: string
+          field: string
+          reason: string
+        }
+        Returns: string
+      }
+      review_application: {
+        Args: {
+          application: string
+          decision: Database["public"]["Enums"]["application_status"]
+          reason?: string
+          handle?: string
+          public_name?: string
+        }
+        Returns: undefined
+      }
+      sanction_member: {
+        Args: {
+          member: string
+          kind: string
+          days?: number
+          reason?: string
+        }
+        Returns: undefined
+      }
+      search_posts: {
+        Args: {
+          query: string
+          in_space?: string
+          newest?: boolean
+          max_results?: number
+        }
+        Returns: string[]
+      }
+      set_expert_status: {
+        Args: {
+          expert: string
+          new_status: Database["public"]["Enums"]["expert_status"]
+          reason: string
+        }
+        Returns: undefined
+      }
+      set_member_role: {
+        Args: {
+          member: string
+          new_role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: undefined
+      }
+      staff_member_detail: {
+        Args: {
+          member: string
+        }
+        Returns: Json
+      }
+      staff_members: {
+        Args: {
+          search?: string
+          in_status?: string
+          in_role?: string
+          max_rows?: number
+        }
+        Returns: Json
+      }
+      staff_queue: {
+        Args: {
+          tab: string
+        }
+        Returns: Json
+      }
+      staff_queue_counts: {
+        Args: never
+        Returns: Json
+      }
+      submit_expert_application: {
+        Args: {
+          data: Json
+          invite_token?: string
+        }
+        Returns: string
+      }
+      touch_last_active: {
+        Args: never
+        Returns: undefined
       }
     }
     Enums: {
