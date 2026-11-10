@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { cn } from "cn"
+import { cn } from "../lib/utils"
 import { EyeIcon, TriangleAlertIcon } from "lucide-react"
 
 import { Button } from "../components/button"
@@ -34,7 +34,7 @@ function ContentWarningBlur({
   if (revealed) return <div className={className}>{children}</div>
 
   return (
-    <div className={cn("relative overflow-hidden rounded-lg", className)}>
+    <div className={cn("relative min-h-28 overflow-hidden rounded-lg", className)}>
       <div aria-hidden inert className="pointer-events-none blur-md select-none">
         {children}
       </div>

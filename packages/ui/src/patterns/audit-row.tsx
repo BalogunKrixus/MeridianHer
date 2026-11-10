@@ -1,9 +1,10 @@
 "use client"
 
-import { cn } from "cn"
+import { cn } from "../lib/utils"
 import { ChevronRightIcon } from "lucide-react"
 
 import { Badge } from "../components/badge"
+import { Button } from "../components/button"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../components/collapsible"
 
 export type AuditEntry = {
@@ -29,14 +30,12 @@ function AuditRow({ entry, className }: { entry: AuditEntry; className?: string 
         {hasDiff ? (
           <CollapsibleTrigger
             aria-label="Show before and after"
-            className="group/audit relative tap-target flex size-5 items-center justify-center rounded text-muted-foreground hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring focus-visible:outline-none"
+            render={<Button variant="ghost" size="icon-xs" className="group/audit text-muted-foreground" />}
           >
-            <ChevronRightIcon className="size-4 transition-transform group-data-panel-open/audit:rotate-90" aria-hidden />
+            <ChevronRightIcon className="transition-transform group-data-panel-open/audit:rotate-90" aria-hidden />
           </CollapsibleTrigger>
-        ) : (
-          <span />
-        )}
-        <time className="font-mono text-xs text-muted-foreground tabular-nums">{entry.at}</time>
+        ) : null}
+        <time className="col-start-2 font-mono text-xs text-muted-foreground tabular-nums">{entry.at}</time>
         <span className="truncate font-medium">{entry.actor}</span>
         <span>
           <Badge variant={DESTRUCTIVE.test(entry.action) ? "destructive" : "secondary"}>{entry.action}</Badge>

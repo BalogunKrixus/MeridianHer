@@ -32,6 +32,20 @@ export type SpaceMeta = {
   icon: LucideIcon
 }
 
+/** Icons by the lucide name stored in `spaces.icon`. */
+export const SPACE_ICONS: Record<string, LucideIcon> = {
+  droplet: DropletIcon,
+  sprout: SproutIcon,
+  baby: BabyIcon,
+  "heart-handshake": HeartHandshakeIcon,
+  sunset: SunsetIcon,
+  activity: ActivityIcon,
+  heart: HeartIcon,
+  brain: BrainIcon,
+  salad: SaladIcon,
+  sparkles: SparklesIcon,
+}
+
 /** Launch set from PRD section 6.2. Admins will manage these in the database; this is the seed and design reference. */
 export const LAUNCH_SPACES: SpaceMeta[] = [
   { slug: "periods", name: "Periods and cycles", tone: "periods", icon: DropletIcon },

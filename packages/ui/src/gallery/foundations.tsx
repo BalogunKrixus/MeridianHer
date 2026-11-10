@@ -1,14 +1,21 @@
 "use client"
 
 import * as React from "react"
-import { cn } from "cn"
+import { cn } from "../lib/utils"
 
+import { HandIcon, PauseIcon } from "lucide-react"
+
+import { Alert, AlertDescription, AlertTitle } from "../components/alert"
+import { Badge } from "../components/badge"
+import { Card, CardContent } from "../components/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/table"
 import { LAUNCH_SPACES, spaceToneStyle } from "../lib/spaces"
 import { SpaceChip } from "../patterns/chips"
-import { Label, Row, Section, Specimen } from "./layout"
+import { Row, Section, Specimen } from "./layout"
 
 function luminance(hex: string) {
-  const m = hex.trim().replace("#", "")
+  let m = hex.trim().replace("#", "")
+  if (/^[0-9a-f]{3}$/i.test(m)) m = [...m].map((c) => c + c).join("")
   if (!/^[0-9a-f]{6}$/i.test(m)) return null
   const c = [0, 2, 4]
     .map((i) => parseInt(m.slice(i, i + 2), 16) / 255)
@@ -84,63 +91,61 @@ export function Foundations({ themeKey }: { themeKey: string }) {
       </Specimen>
 
       <Specimen title="Contrast" note="WCAG 2.2 AA: 4.5:1 for text, 3:1 for control outlines and focus. Also enforced in CI by pnpm check:tokens.">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-xs text-muted-foreground">
-                <th className="pb-2 font-medium">Sample</th>
-                <th className="pb-2 font-medium">Pair</th>
-                <th className="pb-2 font-medium">Use</th>
-                <th className="pb-2 text-right font-medium">Ratio</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {PAIRS.map((p) => {
-                const r = t[p.bg] && t[p.fg] ? contrast(t[p.bg], t[p.fg]) : null
-                const pass = r !== null && r >= p.min
-                return (
-                  <tr key={`${p.bg}-${p.fg}`}>
-                    <td className="py-2 pr-3">
-                      <span
-                        className="inline-flex h-8 w-16 items-center justify-center rounded-md text-sm font-medium ring-1 ring-foreground/10"
-                        style={{ background: `var(--${p.bg})`, color: `var(--${p.fg})` }}
-                      >
-                        {p.min === 3 ? "▢" : "Aa"}
-                      </span>
-                    </td>
-                    <td className="py-2 pr-3 font-mono text-xs whitespace-nowrap">
-                      {p.fg} on {p.bg}
-                    </td>
-                    <td className="py-2 pr-3 text-muted-foreground">{p.use}</td>
-                    <td className={cn("py-2 text-right font-medium tabular-nums whitespace-nowrap", pass ? "text-success" : "text-destructive")}>
-                      {r ? `${r.toFixed(2)}:1` : "..."} {r ? (pass ? "Pass" : "Fail") : ""}
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Sample</TableHead>
+              <TableHead>Pair</TableHead>
+              <TableHead>Use</TableHead>
+              <TableHead className="text-right">Ratio</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {PAIRS.map((p) => {
+              const r = t[p.bg] && t[p.fg] ? contrast(t[p.bg], t[p.fg]) : null
+              const pass = r !== null && r >= p.min
+              return (
+                <TableRow key={`${p.bg}-${p.fg}`}>
+                  <TableCell>
+                    <Badge
+                      variant="outline"
+                      className="h-8 w-16 text-sm"
+                      style={{ background: `var(--${p.bg})`, color: `var(--${p.fg})` }}
+                    >
+                      {p.min === 3 ? "▢" : "Aa"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="font-mono text-xs">
+                    {p.fg} on {p.bg}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">{p.use}</TableCell>
+                  <TableCell className={cn("text-right font-medium tabular-nums", pass ? "text-success" : "text-destructive")}>
+                    {r ? `${r.toFixed(2)}:1 ${pass ? "Pass" : "Fail"}` : null}
+                  </TableCell>
+                </TableRow>
+              )
+            })}
+          </TableBody>
+        </Table>
       </Specimen>
 
-      <Specimen title="Space accents" note="Chips use a 15% tint with foreground text. Icons and text in the accent use the ink shade (4.5:1 or better).">
+      <Specimen title="Space accents" note="Chips use a 15% tint with foreground text. Icons in the accent use the ink shade; the ratio is ink on the page background.">
         <div className="grid gap-3 sm:grid-cols-2">
           {LAUNCH_SPACES.map((s) => {
             const ink = t[`space-${s.tone}-ink`]
             const r = ink && t.background ? contrast(ink, t.background) : null
             return (
-              <div key={s.slug} className="flex items-center gap-3 rounded-lg bg-background p-2.5" style={spaceToneStyle(s.tone)}>
-                <span className="size-8 shrink-0 rounded-full bg-(--tone)" aria-hidden />
+              <div key={s.slug} className="flex items-center gap-3" style={spaceToneStyle(s.tone)}>
                 <s.icon className="size-5 shrink-0 text-(--tone-ink)" aria-hidden />
                 <SpaceChip name={s.name} tone={s.tone} />
-                <span className="ml-auto font-mono text-xs text-muted-foreground tabular-nums">{r ? `${r.toFixed(1)}:1` : ""}</span>
+                <span className="ml-auto font-mono text-xs text-muted-foreground tabular-nums">{r ? `${r.toFixed(1)}:1` : null}</span>
               </div>
             )
           })}
         </div>
       </Specimen>
 
-      <Specimen title="Type" note="Fraunces for headings, Inter for body, Geist Mono for IDs. Switch density to compact to see the admin ramp.">
+      <Specimen title="Type" note="Geist for headings and body, Geist Mono for IDs. Switch density to compact to see the admin ramp.">
         <div className="space-y-4">
           <p className="text-display">Every chapter of her life</p>
           <p className="text-h1">Heading one, community questions</p>
@@ -165,21 +170,33 @@ export function Foundations({ themeKey }: { themeKey: string }) {
             ))}
           </Row>
         </Specimen>
-        <Specimen title="Elevation" note="Soft shadow instead of hairline borders.">
-          <div className="grid grid-cols-2 gap-4 bg-background p-4">
-            <div className="rounded-xl bg-card p-4 text-sm shadow-soft">shadow-soft</div>
-            <div className="rounded-xl bg-card p-4 text-sm ring-1 ring-border">Hairline, only where a shadow cannot work</div>
-          </div>
+        <Specimen title="Elevation" note="Soft shadow instead of hairline borders." bare className="grid grid-cols-2 gap-4">
+          <Card>
+            <CardContent>Default: shadow-soft</CardContent>
+          </Card>
+          <Card variant="outline">
+            <CardContent>Outline: only where a shadow cannot work</CardContent>
+          </Card>
         </Specimen>
       </div>
 
-      <Specimen title="Accent rules" bare>
-        <Label>Primary plum on one main action per screen</Label>
-        <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
-          <li>Expert Green only for expert verification and success states.</li>
-          <li>Terracotta only for illustration and large highlights, never body text or small buttons.</li>
-          <li>No raw colour values in app code. pnpm check:tokens fails the build if one appears.</li>
-        </ul>
+      <Specimen title="Touch and motion" bare className="grid gap-3 md:grid-cols-2">
+        <Alert>
+          <HandIcon aria-hidden />
+          <AlertTitle>44px on touch</AlertTitle>
+          <AlertDescription>
+            On a phone, or below 768px, buttons, inputs, selects and menu items are 44px tall. Checkboxes, switches and small icon
+            buttons keep their size and get an invisible 44px hit area. With a mouse on desktop everything stays at 32px.
+          </AlertDescription>
+        </Alert>
+        <Alert>
+          <PauseIcon aria-hidden />
+          <AlertTitle>Reduced motion</AlertTitle>
+          <AlertDescription>
+            Turn on reduce motion in your system settings and every overlay, sheet, spinner and chart on this page appears without
+            animating.
+          </AlertDescription>
+        </Alert>
       </Specimen>
     </Section>
   )

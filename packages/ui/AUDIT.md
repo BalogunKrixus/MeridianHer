@@ -234,3 +234,12 @@ All seven recommendations accepted: Next 16 (D1), Base UI (D2), the three token 
 the extra stock components (D5), a `/design` route in each app (D6), text wordmark until the logo arrives (D7).
 Also requested: reduced motion across every component, and 44px touch targets on mobile while desktop admin stays at 32px.
 Implementation notes are in `packages/ui/README.md`. PRD section 11 updated for D1 and D2.
+
+## 13. Changes after approval
+
+- **D4 replaced (1 Nov 2026):** Geist is the only typeface. Geist for headings and body, Geist Mono for technical values,
+  loaded with the Latin, Latin Extended and Vietnamese subsets (which covers G12). Fraunces and Inter are removed.
+- **D5 narrowed:** the package keeps only components that a pattern or screen imports. Accordion, AlertDialog, Breadcrumb,
+  ButtonGroup, Calendar, Command, Dialog, Drawer, HoverCard, Pagination, Popover, Progress, RadioGroup, ScrollArea, Sidebar,
+  Skeleton, Sonner and Tabs were removed and come back from the registry when a screen needs them.
+

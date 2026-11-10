@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Checks (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        # Windows proves every script runs in PowerShell (PRD section 11)
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Typecheck
+        run: pnpm -r typecheck
+      - name: Token contrast and raw colour guard
+        run: pnpm check:tokens
+      - name: RLS test suite
+        run: pnpm --filter @meridianher/db test
+      - name: Database types are up to date
+        if: runner.os == 'Linux'
+        run: |
+          pnpm db:types
+          git diff --exit-code -- packages/db/src/database.types.ts
+
+  build:
+    name: Build ${{ matrix.app }}
+    needs: checks
+    strategy:
+      matrix:
+        app: [community, admin]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @meridianher/${{ matrix.app }} build
